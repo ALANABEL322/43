@@ -1,19 +1,15 @@
-import { Link } from "react-router-dom"
-import logoFooter from "../assets/LeadtyLogo.png"
-import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "lucide-react"
+import { Link } from "react-router-dom";
+import logoFooter from "@/assets/logoApp.png";
+import { Facebook, Instagram, Linkedin, Twitter, Youtube } from "lucide-react";
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-white z-50 py-6 px-4 md:px-8 lg:px-6">
+    <footer className="w-full bg-[#ffff] z-50 py-6 px-4 md:px-8 ">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="flex flex-col space-y-6">
             <div className="flex items-center">
-              <img
-                src={logoFooter}
-                alt="Logo"
-                className="h-20 w-30 mr-2"
-              />
+              <img src={logoFooter} alt="Logo" className="h-20 w-30 mr-2" />
             </div>
 
             <div className="flex space-x-3">
@@ -101,7 +97,9 @@ export default function Footer() {
 
           {/* Newsletter Subscription */}
           <div>
-            <h3 className="font-medium text-lg mb-4">Ingresa tu correo para recibir nuestras novedades</h3>
+            <h3 className="font-medium text-lg mb-4">
+              Ingresa tu correo para recibir nuestras novedades
+            </h3>
             <div className="mt-2 flex flex-col space-y-3">
               <input
                 type="email"
@@ -124,5 +122,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }
