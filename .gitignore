@@ -1,0 +1,8 @@
+# Ignorar dependencias
+node_modules/
+
+# Ignorar carpeta de build
+dist/
+
+# Ignorar carpeta personalizada
+wilds/
