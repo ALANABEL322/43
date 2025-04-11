@@ -3,7 +3,7 @@ import type React from "react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, Trash2, ChevronLeft, ChevronRight, Edit } from "lucide-react";
 
 interface User {
   id: number;
@@ -128,25 +128,28 @@ export default function UsersPage() {
       </div>
 
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white p-2">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="text"
-            placeholder="Buscar usuario"
-            value={searchQuery}
-            onChange={handleSearch}
-            className="pl-10 w-full"
-          />
+        <div className="flex items-center gap-2 mb-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+            <Input
+              type="text"
+              placeholder="Buscar usuario"
+              value={searchQuery}
+              onChange={handleSearch}
+              className="pl-10 w-full"
+            />
+          </div>
+          <Button className="h-10 px-4">Buscar</Button>
         </div>
-        <div className="truncate grid grid-cols-5 gap-4 border-b p-5  bg-gray-50 font-medium text-md shadow-lg pb-2 h-20 items-center">
+
+        <div className="truncate grid grid-cols-5 gap-4 border-b p-5 bg-emerald-100 font-medium text-md shadow-lg pb-2 h-20 items-center">
           <div>Nombre</div>
           <div>Email</div>
           <div>Rol</div>
           <div>Teléfono</div>
-          <div className="text-center ">Opciones</div>
+          <div className="text-center">Opciones</div>
         </div>
 
-        {/* Table Body */}
         <div className="divide-y">
           {filteredUsers.map((user) => (
             <div
@@ -157,7 +160,15 @@ export default function UsersPage() {
               <div className="truncate">{user.email}</div>
               <div className="truncate">{user.role}</div>
               <div className="truncate">{user.phone}</div>
-              <div className="flex justify-center">
+              <div className="flex justify-center space-x-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => console.log(`Editar usuario ${user.id}`)}
+                  aria-label={`Edit ${user.name}`}
+                >
+                  <Edit className="h-5 w-5 text-gray-500" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -172,11 +183,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Pagination */}
-      <div className="flex items-center justify-between text-sm">
-        <div className="text-gray-500">
-          Mostrando {usersPerPage} de {totalUsers}
-        </div>
+      <div className="items-center justify-center flex text-sm">
         <div className="flex items-center space-x-1 border p-1 border-gray-300 rounded-lg">
           <Button
             variant="ghost"
@@ -210,7 +217,7 @@ export default function UsersPage() {
                 size="icon"
                 className={`w-8 h-8 ${
                   currentPage === pageNumber
-                    ? "bg-red-500 hover:bg-red-600"
+                    ? "bg-gray-900 hover:bg-slate-800"
                     : ""
                 }`}
                 onClick={() => handlePageChange(pageNumber)}
@@ -228,7 +235,7 @@ export default function UsersPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="w-8 h-8"
+                className="w-8 h-8 "
                 onClick={() => handlePageChange(totalPages)}
                 aria-label={`Page ${totalPages}`}
               >

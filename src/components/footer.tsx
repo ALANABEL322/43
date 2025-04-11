@@ -73,7 +73,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Legal Column */}
           <div>
             <h3 className="font-medium text-lg mb-4">Legal</h3>
             <ul className="space-y-3">
@@ -95,7 +94,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Newsletter Subscription */}
           <div>
             <h3 className="font-medium text-lg mb-4">
               Ingresa tu correo para recibir nuestras novedades
@@ -108,15 +106,13 @@ export default function Footer() {
               />
               <button
                 type="button"
-                className="px-4 py-2 bg-[#E84C3D] text-white rounded-md hover:bg-[#d44536] transition-colors"
+                className="px-4 py-2 bg-[#2da19f] text-white rounded-md hover:bg-[#298d8d] transition-colors"
               >
                 Suscribirme
               </button>
             </div>
           </div>
         </div>
-
-        {/* Divider */}
         <div className="pt-8 border-t border-gray-200">
           <p className="text-center text-gray-400 text-sm">©️ Copyright</p>
         </div>
