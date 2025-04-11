@@ -1,23 +1,23 @@
-import { useState } from 'react';
-import { useAuthStore } from '@/store/authStore';
-import { Link, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Eye, EyeOff } from 'lucide-react';
-import { paths } from '@/routes/paths';
+import { useState } from "react";
+import { useAuthStore } from "@/store/authStore";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff } from "lucide-react";
+import { paths } from "@/routes/paths";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [_error, setError] = useState('');
+  const [_error, setError] = useState("");
   const { login, isAdmin } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
 
     try {
       const success = await login(email, password);
@@ -28,10 +28,10 @@ export default function LoginForm() {
           navigate(paths.user.landingPage);
         }
       } else {
-        setError('Credenciales inválidas');
+        setError("Credenciales inválidas");
       }
     } catch (err) {
-      setError('Error al iniciar sesión');
+      setError("Error al iniciar sesión");
     }
   };
 
@@ -57,7 +57,7 @@ export default function LoginForm() {
           <div className="relative">
             <Input
               id="password"
-              type={showPassword ? 'text' : 'password'}
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ingresa tu contraseña"
@@ -74,17 +74,20 @@ export default function LoginForm() {
           <p className="text-xs text-gray-500">Ingresa tu contraseña</p>
         </div>
 
-        <Button type="submit" className="w-full bg-[#1a3c5b] hover:bg-[#15324c]">
+        <Button
+          type="submit"
+          className="w-full bg-[#2da19f] hover:bg-[#328d8d]"
+        >
           Iniciar sesión
         </Button>
       </form>
 
       <div className="mt-6 text-center text-sm">
         <p>
-          ¿No tienes cuenta?{' '}
+          ¿No tienes cuenta?{" "}
           <Link
             to={paths.auth.register}
-            className="text-[#1a3c5b] hover:text-[#15324c] font-medium"
+            className="text-[#2da19f] hover:text-[#328d8d] font-medium"
           >
             Regístrate aquí
           </Link>

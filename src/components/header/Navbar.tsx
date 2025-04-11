@@ -1,9 +1,7 @@
-import { LogOut } from 'lucide-react';
-import { useAuthStore } from '@/store/authStore';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../ui/button';
-import logo from "../../assets/LeadtyLogo.png";
-import { paths } from '@/routes/paths';
+import { useAuthStore } from "@/store/authStore";
+import { useNavigate } from "react-router-dom";
+import logo from "@/assets/logoApp.png";
+import { paths } from "@/routes/paths";
 
 export default function Navbar() {
   const { user, logout } = useAuthStore();
@@ -31,9 +29,11 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-gray-700">{user.username}</span>
+                <span className="text-sm font-medium text-gray-700">
+                  {user.username}
+                </span>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 rounded-full">
-                  {user.role === 'admin' ? 'Admin' : 'Usuario'}
+                  {user.role === "admin" ? "Admin" : "Usuario"}
                 </span>
               </div>
             </div>
