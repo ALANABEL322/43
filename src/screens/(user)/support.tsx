@@ -1,22 +1,22 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/select";
 
 interface Ticket {
   id: string;
   subject: string;
   description: string;
-  status: 'open' | 'closed';
+  status: "open" | "closed";
   response?: string;
   createdAt: string;
 }
@@ -24,23 +24,23 @@ interface Ticket {
 export default function UserSupportPage() {
   const [tickets] = useState<Ticket[]>([
     {
-      id: '1',
-      subject: 'Problema con la creación de proyecto',
-      description: 'No puedo crear un nuevo proyecto...',
-      status: 'open',
+      id: "1",
+      subject: "Problema con la creación de proyecto",
+      description: "No puedo crear un nuevo proyecto...",
+      status: "open",
       createdAt: new Date().toISOString(),
     },
   ]);
 
   const [newTicket, setNewTicket] = useState({
-    subject: '',
-    description: '',
-    priority: 'medium',
+    subject: "",
+    description: "",
+    priority: "medium",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Nuevo ticket:', newTicket);
+    console.log("Nuevo ticket:", newTicket);
   };
 
   return (
@@ -58,7 +58,10 @@ export default function UserSupportPage() {
                   id="subject"
                   value={newTicket.subject}
                   onChange={(e) =>
-                    setNewTicket((prev) => ({ ...prev, subject: e.target.value }))
+                    setNewTicket((prev) => ({
+                      ...prev,
+                      subject: e.target.value,
+                    }))
                   }
                   required
                 />
@@ -117,12 +120,12 @@ export default function UserSupportPage() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm text-gray-500">
-                      Estado:{' '}
+                      Estado:{" "}
                       <span
                         className={`inline-block px-2 py-1 text-xs rounded-full ${
-                          ticket.status === 'open'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-gray-100 text-gray-800'
+                          ticket.status === "open"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
                         }`}
                       >
                         {ticket.status}
