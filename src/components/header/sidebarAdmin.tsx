@@ -15,7 +15,7 @@ import {
   Home,
   Users,
   BarChart3,
-  FileText,
+  MonitorCog,
   Settings,
   LogOut,
 } from "lucide-react";
@@ -73,11 +73,11 @@ export default function SidebarAdmin() {
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.admin.reports)}
+                    onClick={() => navigate(paths.admin.config)}
                     className="w-full"
                   >
-                    <FileText className="h-4 w-4 text-white" />
-                    <span className="text-white">Reportes</span>
+                    <MonitorCog className="h-4 w-4 text-white" />
+                    <span className="text-white">Configuración</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 

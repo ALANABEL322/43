@@ -1,32 +1,32 @@
-import { Outlet, RouteObject } from 'react-router-dom';
-import { paths } from './paths';
+import { Outlet, RouteObject } from "react-router-dom";
+import { paths } from "./paths";
 
 // Layouts
-import Layout from '@/components/layout/Layout';
-import AuthLayout from '@/screens/authScreens/authLayout';
+import Layout from "@/components/layout/Layout";
+import AuthLayout from "@/screens/authScreens/authLayout";
 
 // Auth pages
-import LoginForm from '@/screens/authScreens/loginForm';
-import RegisterForm from '@/screens/authScreens/registerForm';
-import Home from '@/screens/home';
+import LoginForm from "@/screens/authScreens/loginForm";
+import RegisterForm from "@/screens/authScreens/registerForm";
+import Home from "@/screens/home";
 
 // Admin pages
-import UsersPage from '@/screens/(admin)/users';
-import ReportsPage from '@/screens/(admin)/reports';
-import AdminSupportPage from '@/screens/(admin)/support';
-import DashboardAdmin from '@/screens/(admin)/dashboard';
+import UsersPage from "@/screens/(admin)/users";
+import Config from "@/screens/(admin)/config";
+import AdminSupportPage from "@/screens/(admin)/support";
+import DashboardAdmin from "@/screens/(admin)/dashboard";
 
 // User pages
-import CreateProject from '@/screens/(user)/createProject';
-import Projects from '@/screens/(user)/projects';
-import UserSupportPage from '@/screens/(user)/support';
-import LandingPage from '@/screens/(user)/landingPage';
-import ProtectedRoute from './ProtectedRoute';
+import CreateProject from "@/screens/(user)/createProject";
+import Projects from "@/screens/(user)/projects";
+import UserSupportPage from "@/screens/(user)/support";
+import LandingPage from "@/screens/(user)/landingPage";
+import ProtectedRoute from "./ProtectedRoute";
 
 export const publicRoutes: RouteObject[] = [
   {
     path: paths.root,
-    element: <Home />
+    element: <Home />,
   },
   {
     path: paths.auth.login,
@@ -34,7 +34,7 @@ export const publicRoutes: RouteObject[] = [
       <AuthLayout>
         <LoginForm />
       </AuthLayout>
-    )
+    ),
   },
   {
     path: paths.auth.register,
@@ -42,8 +42,8 @@ export const publicRoutes: RouteObject[] = [
       <AuthLayout>
         <RegisterForm />
       </AuthLayout>
-    )
-  }
+    ),
+  },
 ];
 
 export const adminRoutes: RouteObject[] = [
@@ -59,22 +59,22 @@ export const adminRoutes: RouteObject[] = [
     children: [
       {
         path: paths.admin.dashboard,
-        element: <DashboardAdmin />
+        element: <DashboardAdmin />,
       },
       {
         path: paths.admin.users,
-        element: <UsersPage />
+        element: <UsersPage />,
       },
       {
-        path: paths.admin.reports,
-        element: <ReportsPage />
+        path: paths.admin.config,
+        element: <Config />,
       },
       {
         path: paths.admin.support,
-        element: <AdminSupportPage />
-      }
-    ]
-  }
+        element: <AdminSupportPage />,
+      },
+    ],
+  },
 ];
 
 export const userRoutes: RouteObject[] = [
@@ -90,26 +90,26 @@ export const userRoutes: RouteObject[] = [
     children: [
       {
         path: paths.user.landingPage,
-        element: <LandingPage />
+        element: <LandingPage />,
       },
       {
         path: paths.user.createProject,
-        element: <CreateProject />
+        element: <CreateProject />,
       },
       {
         path: paths.user.projects,
-        element: <Projects />
+        element: <Projects />,
       },
       {
         path: paths.user.support,
-        element: <UserSupportPage />
-      }
-    ]
-  }
+        element: <UserSupportPage />,
+      },
+    ],
+  },
 ];
 
 export const routes: RouteObject[] = [
   ...publicRoutes,
   ...adminRoutes,
-  ...userRoutes
+  ...userRoutes,
 ];

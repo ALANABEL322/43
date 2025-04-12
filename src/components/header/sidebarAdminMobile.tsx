@@ -1,34 +1,56 @@
-import { useNavigate } from 'react-router-dom';
-import { 
-  Users, 
-  PieChart, 
+import { useNavigate } from "react-router-dom";
+import {
+  Users,
+  PieChart,
   LogOut,
-  BarChart2,
+  MonitorCog,
   MessageSquare,
-} from 'lucide-react';
-import { motion } from 'framer-motion';
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 interface SidebarAdminMobileProps {
   visible?: boolean;
 }
 
-export default function SidebarAdminMobile({ visible = true }: SidebarAdminMobileProps) {
+export default function SidebarAdminMobile({
+  visible = true,
+}: SidebarAdminMobileProps) {
   const navigate = useNavigate();
 
   const menuItems = [
-    { icon: Users, path: '/admin/users', tooltip: 'Usuarios', color: '#E65100' },
-    { icon: PieChart, path: '/admin', tooltip: 'Métricas', color: '#26C6DA' },
-    { icon: BarChart2, path: '/admin/reports', tooltip: 'Reportes', color: '#EC407A' },
-    { icon: MessageSquare, path: '/admin/support', tooltip: 'Soporte', color: '#EC407A' },
-    { icon: LogOut, path: '/login', tooltip: 'Cerrar sesión', color: '#EF5350' },
+    {
+      icon: Users,
+      path: "/admin/users",
+      tooltip: "Usuarios",
+      color: "#E65100",
+    },
+    { icon: PieChart, path: "/admin", tooltip: "Métricas", color: "#26C6DA" },
+    {
+      icon: MonitorCog,
+      path: "/admin/config",
+      tooltip: "Configuración",
+      color: "#EC407A",
+    },
+    {
+      icon: MessageSquare,
+      path: "/admin/support",
+      tooltip: "Soporte",
+      color: "#EC407A",
+    },
+    {
+      icon: LogOut,
+      path: "/login",
+      tooltip: "Cerrar sesión",
+      color: "#EF5350",
+    },
   ];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ 
+      animate={{
         opacity: visible ? 1 : 0,
-        y: visible ? 0 : 20
+        y: visible ? 0 : 20,
       }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -51,14 +73,14 @@ export default function SidebarAdminMobile({ visible = true }: SidebarAdminMobil
           >
             <item.icon className="h-6 w-6" />
           </motion.div>
-          
+
           <motion.div
             className="absolute inset-0 rounded-full opacity-0"
             style={{ backgroundColor: item.color }}
             initial={{ scale: 0.8 }}
-            whileHover={{ 
+            whileHover={{
               opacity: 0.2,
-              scale: 1
+              scale: 1,
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           />
