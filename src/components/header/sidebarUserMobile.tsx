@@ -1,32 +1,61 @@
-import { useNavigate } from 'react-router-dom';
-import { 
-  LifeBuoy, 
-  LogOut, 
-  Package, 
-  Folder, 
-} from 'lucide-react';
-import { motion } from 'framer-motion';
-
+import { useNavigate } from "react-router-dom";
+import {
+  Home,
+  Handshake,
+  Database,
+  LogOut,
+  LayoutDashboard,
+  CircleAlert,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 interface SidebarUserMobileProps {
   visible?: boolean;
 }
 
-export default function SidebarUserMobile({ visible = true }: SidebarUserMobileProps) {
+export default function SidebarUserMobile({
+  visible = true,
+}: SidebarUserMobileProps) {
   const navigate = useNavigate();
   const menuItems = [
-    { icon: Package, path: '/dashboard/createProject', tooltip: 'Crear Proyecto', color: '#E65100' },
-    { icon: Folder, path: '/dashboard/projects', tooltip: 'Proyectos', color: '#26C6DA' },
-    { icon: LifeBuoy, path: '/dashboard/support', tooltip: 'Soporte', color: '#66BB6A' },
-    { icon: LogOut, path: '/login', tooltip: 'Cerrar sesión', color: '#EF5350' },
+    {
+      icon: LayoutDashboard,
+      path: "/dashboard/inicio",
+      tooltip: "inicio",
+      color: "#E65100",
+    },
+    {
+      icon: Database,
+      path: "/dashboard/servidores",
+      tooltip: "servidores",
+      color: "#26C6DA",
+    },
+    {
+      icon: CircleAlert,
+      path: "/dashboard/panel-de-alertas",
+      tooltip: "panel de alertas",
+      color: "#66BB6A",
+    },
+    {
+      icon: Handshake,
+      path: "/dashboard/soporte",
+      tooltip: "soporte",
+      color: "#66BB6A",
+    },
+    {
+      icon: LogOut,
+      path: "/login",
+      tooltip: "Cerrar sesión",
+      color: "#EF5350",
+    },
   ];
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
-      animate={{ 
+      animate={{
         opacity: visible ? 1 : 0,
-        y: visible ? 0 : 20
+        y: visible ? 0 : 20,
       }}
       exit={{ opacity: 0, y: 20 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
@@ -49,14 +78,14 @@ export default function SidebarUserMobile({ visible = true }: SidebarUserMobileP
           >
             <item.icon className="h-6 w-6" />
           </motion.div>
-          
+
           <motion.div
             className="absolute inset-0 rounded-full opacity-0"
             style={{ backgroundColor: item.color }}
             initial={{ scale: 0.8 }}
-            whileHover={{ 
+            whileHover={{
               opacity: 0.2,
-              scale: 1
+              scale: 1,
             }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
           />

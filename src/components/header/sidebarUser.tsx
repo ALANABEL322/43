@@ -11,7 +11,14 @@ import {
   SidebarMenuButton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { Home, Users, FileText, LogOut } from "lucide-react";
+import {
+  Home,
+  Handshake,
+  Database,
+  LogOut,
+  LayoutDashboard,
+  CircleAlert,
+} from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
 import { paths } from "@/routes/paths";
@@ -46,31 +53,31 @@ export default function SidebarUser() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.root)}
+                    onClick={() => navigate(paths.user.inicio)}
                     className="w-full"
                   >
-                    <Home className="h-4 w-4 text-white" />
+                    <LayoutDashboard className="h-4 w-4 text-white" />
                     <span className="text-white">Inicio</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.createProject)}
+                    onClick={() => navigate(paths.user.servidores)}
                     className="w-full"
                   >
-                    <FileText className="h-4 w-4 text-white" />
-                    <span className="text-white">Crear Proyecto</span>
+                    <Database className="h-4 w-4 text-white" />
+                    <span className="text-white">Servidores</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.projects)}
+                    onClick={() => navigate(paths.user.panelDeAlertas)}
                     className="w-full"
                   >
-                    <FileText className="h-4 w-4 text-white" />
-                    <span className="text-white">Mis Proyectos</span>
+                    <CircleAlert className="h-4 w-4 text-white" />
+                    <span className="text-white">Panel de alertas</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
@@ -79,7 +86,7 @@ export default function SidebarUser() {
                     onClick={() => navigate(paths.user.support)}
                     className="w-full"
                   >
-                    <Users className="h-4 w-4 text-white" />
+                    <Handshake className="h-4 w-4 text-white" />
                     <span className="text-white">Soporte</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
