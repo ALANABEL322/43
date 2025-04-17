@@ -26,7 +26,7 @@ export default function LandingPage() {
               </p>
               <div>
                 <Button className="bg-emerald-500 hover:bg-emerald-600">
-                  <Link to={paths.user.createProject}>Comenzar</Link>
+                  <Link to={paths.user.inicio}>Comenzar</Link>
                 </Button>
               </div>
             </div>
@@ -233,7 +233,7 @@ export default function LandingPage() {
             </p>
 
             <Button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 rounded-md text-lg font-medium">
-              <Link to={paths.user.createProject}>Comenzar</Link>
+              <Link to={paths.user.inicio}>Comenzar</Link>
             </Button>
           </div>
           <div className="grid grid-cols-2 gap-4">

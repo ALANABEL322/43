@@ -17,8 +17,8 @@ import AdminSupportPage from "@/screens/(admin)/support";
 import DashboardAdmin from "@/screens/(admin)/dashboard";
 
 // User pages
-import CreateProject from "@/screens/(user)/createProject";
-import Projects from "@/screens/(user)/projects";
+import CreateProject from "@/screens/(user)/inicio";
+import Projects from "@/screens/(user)/servidores";
 import LandingPage from "@/screens/(user)/landingPage";
 import { UserSupportPage } from "@/screens/(user)/support";
 import ProtectedRoute from "./ProtectedRoute";
@@ -93,11 +93,15 @@ export const userRoutes: RouteObject[] = [
         element: <LandingPage />,
       },
       {
-        path: paths.user.createProject,
+        path: paths.user.inicio,
         element: <CreateProject />,
       },
       {
-        path: paths.user.projects,
+        path: paths.user.servidores,
+        element: <Projects />,
+      },
+      {
+        path: paths.user.panelDeAlertas,
         element: <Projects />,
       },
       {

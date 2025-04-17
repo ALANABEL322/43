@@ -46,7 +46,7 @@ export default function Projects() {
     <div className="container mx-auto py-10">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">Mis Proyectos</h1>
-        <Button onClick={() => navigate(paths.user.createProject)}>
+        <Button onClick={() => navigate(paths.user.servidores)}>
           Nuevo Proyecto
         </Button>
       </div>
