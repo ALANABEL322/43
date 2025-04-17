@@ -6,13 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { paths } from "@/routes/paths";
+import { api } from "@/api/auth";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [_error, setError] = useState("");
-  const { login, isAdmin } = useAuthStore();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -20,15 +20,16 @@ export default function LoginForm() {
     setError("");
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        if (isAdmin()) {
-          navigate(paths.admin.dashboard);
+      const response = await api.login(email, password);
+      if (response.success) {
+        const userRole = useAuthStore.getState().user?.role;
+        if (userRole === "admin" || userRole === "user") {
+          navigate("/admin/dashboard");
         } else {
-          navigate(paths.user.landingPage);
+          navigate("/user/landingPage");
         }
       } else {
-        setError("Credenciales inválidas");
+        setError(response.error || "Error al iniciar sesión");
       }
     } catch (err) {
       setError("Error al iniciar sesión");
