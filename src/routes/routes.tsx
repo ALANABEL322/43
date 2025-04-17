@@ -19,8 +19,8 @@ import DashboardAdmin from "@/screens/(admin)/dashboard";
 // User pages
 import CreateProject from "@/screens/(user)/createProject";
 import Projects from "@/screens/(user)/projects";
-import UserSupportPage from "@/screens/(user)/support";
 import LandingPage from "@/screens/(user)/landingPage";
+import { UserSupportPage } from "@/screens/(user)/support";
 import ProtectedRoute from "./ProtectedRoute";
 
 export const publicRoutes: RouteObject[] = [
