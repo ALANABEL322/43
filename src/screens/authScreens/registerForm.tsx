@@ -5,11 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useAuth } from "@/auth/AuthContext";
 import { registerSchema } from "@/auth/schemas";
+import { api } from "@/api/auth";
 
 export default function RegisterForm() {
-  const { register } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
 
   return (
@@ -23,14 +22,17 @@ export default function RegisterForm() {
         }}
         validationSchema={registerSchema}
         onSubmit={async (values, { setSubmitting }) => {
-          const success = await register(
-            values.username,
-            values.email,
-            values.password
-          );
-          if (!success) {
-            setSubmitting(false);
+          const { username, email, password } = values;
+          const response = await api.registerLocal({
+            username,
+            email,
+            password,
+            role: "user",
+          });
+          if (!response.success) {
+            console.error(response.error);
           }
+          setSubmitting(false);
         }}
       >
         {({ isSubmitting }) => (
@@ -158,44 +160,6 @@ export default function RegisterForm() {
               />
               <p className="text-xs text-gray-500">Ingresa tu contraseña</p>
             </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                Confirmar Contraseña
-              </Label>
-              <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </div>
-                <Field
-                  as={Input}
-                  type="password"
-                  name="confirmPassword"
-                  id="confirmPassword"
-                  placeholder="Confirma tu contraseña"
-                  className="pl-10"
-                />
-              </div>
-              <ErrorMessage
-                name="confirmPassword"
-                component="div"
-                className="text-red-500 text-sm mt-1"
-              />
-              <p className="text-xs text-gray-500">Confirma tu contraseña</p>
-            </div>
-
             <Button
               type="submit"
               disabled={isSubmitting}
