@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,57 +11,94 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
-interface FAQ {
-  id: number;
-  question: string;
-  answer: string;
-}
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useSupportStore } from "@/store/support/supportStore";
+import { toast } from "sonner";
+import { createRoot } from "react-dom/client";
 
 export default function FAQManagement() {
-  const [faqs, setFaqs] = useState<FAQ[]>([
-    {
-      id: 1,
-      question: "¿Lorem ipsum dolor sit amet?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci.",
-    },
-    {
-      id: 2,
-      question: "¿Lorem ipsum dolor sit amet?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci.",
-    },
-    {
-      id: 3,
-      question: "¿Lorem ipsum dolor sit amet?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci.",
-    },
-    {
-      id: 4,
-      question: "¿Lorem ipsum dolor sit amet?",
-      answer:
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut bibendum placerat faucibus. Nullam quis vulputate purus. Aenean sed purus orci.",
-    },
-  ]);
-
+  const { predefinedAnswers, addPredefinedAnswer, deletePredefinedAnswer } =
+    useSupportStore();
   const [newQuestion, setNewQuestion] = useState("");
   const [newAnswer, setNewAnswer] = useState("");
   const [open, setOpen] = useState(false);
 
   const handleAddFAQ = () => {
     if (newQuestion.trim() && newAnswer.trim()) {
-      const newFAQ: FAQ = {
-        id: faqs.length + 1,
-        question: newQuestion,
-        answer: newAnswer,
-      };
-      setFaqs([...faqs, newFAQ]);
+      addPredefinedAnswer(newQuestion.trim(), newAnswer.trim());
       setNewQuestion("");
       setNewAnswer("");
       setOpen(false);
+      toast.success("Respuesta predefinida agregada correctamente");
+    } else {
+      toast.error("Por favor complete todos los campos");
     }
+  };
+
+  const handleDelete = (id: string) => {
+    const dialog = document.createElement("div");
+    document.body.appendChild(dialog);
+
+    const showConfirmDialog = () => {
+      return new Promise<boolean>((resolve) => {
+        const cleanup = () => {
+          document.body.removeChild(dialog);
+        };
+
+        const onConfirm = () => {
+          resolve(true);
+          cleanup();
+        };
+
+        const onCancel = () => {
+          resolve(false);
+          cleanup();
+        };
+
+        const dialogContent = (
+          <AlertDialog defaultOpen>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>¿Estás seguro?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción no se puede deshacer. La respuesta predefinida
+                  será eliminada permanentemente.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={onCancel}>
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={onConfirm}
+                  className="bg-red-500 hover:bg-red-600"
+                >
+                  Eliminar
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        );
+
+        createRoot(dialog).render(dialogContent);
+      });
+    };
+
+    showConfirmDialog().then((confirmed) => {
+      if (confirmed) {
+        deletePredefinedAnswer(id);
+        toast.success("Respuesta predefinida eliminada correctamente");
+      }
+    });
   };
 
   return (
@@ -123,21 +160,31 @@ export default function FAQManagement() {
       </div>
 
       <div className="space-y-4">
-        {faqs.map((faq) => (
+        {predefinedAnswers.map((faq) => (
           <Card key={faq.id} className="border border-gray-200">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
-                <div className="min-w-[40px] font-medium text-gray-500">
-                  {String(faq.id).padStart(2, "0")}
-                </div>
-                <div>
+                <div className="flex-grow">
                   <h3 className="font-medium mb-2">{faq.question}</h3>
                   <p className="text-gray-600 text-sm">{faq.answer}</p>
                 </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleDelete(faq.id)}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
               </div>
             </CardContent>
           </Card>
         ))}
+        {predefinedAnswers.length === 0 && (
+          <div className="text-center text-gray-500 py-8">
+            No hay respuestas predefinidas. Agregue algunas para empezar.
+          </div>
+        )}
       </div>
     </div>
   );
