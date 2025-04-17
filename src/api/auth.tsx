@@ -5,6 +5,17 @@ console.log("Auth API: Module loaded");
 
 export const API_URL = "http://34.238.122.213:1337/api";
 
+export interface APIUser {
+  id: number;
+  username: string;
+  email: string;
+  nombre: string;
+  apellido: string;
+  telefono: string;
+  rol: string;
+  avatar: string;
+}
+
 export const api = {
   async login(email: string, password: string) {
     console.log("Auth API: Login attempt for:", email);
@@ -130,6 +141,29 @@ export const api = {
           error instanceof Error
             ? error.message
             : "Error desconocido al registrar el usuario",
+      };
+    }
+  },
+
+  async getUsers() {
+    try {
+      const response = await axios.get<APIUser[]>(`${API_URL}/users`);
+      return {
+        success: true,
+        users: response.data.map((user) => ({
+          id: user.id,
+          name: `${user.nombre} ${user.apellido}`,
+          email: user.email,
+          role: user.rol,
+          phone: user.telefono,
+          avatar: user.avatar,
+        })),
+      };
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return {
+        success: false,
+        error: "Error al obtener la lista de usuarios",
       };
     }
   },
