@@ -7,32 +7,38 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff } from "lucide-react";
 import { paths } from "@/routes/paths";
 import { api } from "@/api/auth";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [_error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
+    setIsLoading(true);
 
     try {
       const response = await api.login(email, password);
       if (response.success) {
         const userRole = useAuthStore.getState().user?.role;
-        if (userRole === "admin" || userRole === "user") {
-          navigate("/admin/dashboard");
+
+        if (userRole === "admin") {
+          navigate(paths.admin.dashboard);
         } else {
-          navigate("/user/landingPage");
+          navigate(paths.user.landingPage);
         }
+
+        toast.success("Inicio de sesión exitoso");
       } else {
-        setError(response.error || "Error al iniciar sesión");
+        toast.error(response.error || "Error al iniciar sesión");
       }
     } catch (err) {
-      setError("Error al iniciar sesión");
+      toast.error("Error al iniciar sesión");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -41,16 +47,17 @@ export default function LoginForm() {
       <h2 className="text-2xl font-bold mb-4">Iniciar Sesión</h2>
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="email">email</Label>
+          <Label htmlFor="email">Email</Label>
           <Input
             id="email"
-            type="text"
+            type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Ingresa tu email"
             className="w-full"
+            disabled={isLoading}
+            required
           />
-          <p className="text-xs text-gray-500">Ingresa tu email</p>
         </div>
 
         <div className="space-y-2">
@@ -63,23 +70,26 @@ export default function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ingresa tu contraseña"
               className="w-full pr-10"
+              disabled={isLoading}
+              required
             />
             <button
               type="button"
               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff /> : <Eye />}
             </button>
           </div>
-          <p className="text-xs text-gray-500">Ingresa tu contraseña</p>
         </div>
 
         <Button
           type="submit"
           className="w-full bg-[#2da19f] hover:bg-[#328d8d]"
+          disabled={isLoading}
         >
-          Iniciar sesión
+          {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
         </Button>
       </form>
 

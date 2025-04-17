@@ -15,7 +15,7 @@ export const paths = {
   // User routes
   user: {
     root: "/user",
-    landingPage: "/user/landingPage",
+    landingPage: "/user",
     createProject: "/user/createProject",
     projects: "/user/projects",
     support: "/user/support",
