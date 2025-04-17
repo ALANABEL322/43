@@ -17,11 +17,12 @@ import AdminSupportPage from "@/screens/(admin)/support";
 import DashboardAdmin from "@/screens/(admin)/dashboard";
 
 // User pages
-import CreateProject from "@/screens/(user)/inicio";
 import Projects from "@/screens/(user)/servidores";
 import LandingPage from "@/screens/(user)/landingPage";
 import { UserSupportPage } from "@/screens/(user)/support";
 import ProtectedRoute from "./ProtectedRoute";
+import { Inicio } from "@/screens/(user)/inicio";
+import Perfil from "@/screens/(user)/perfil";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -89,12 +90,16 @@ export const userRoutes: RouteObject[] = [
     ),
     children: [
       {
-        path: paths.user.landingPage,
-        element: <LandingPage />,
+        path: paths.user.inicio,
+        element: <Inicio />,
       },
       {
-        path: paths.user.inicio,
-        element: <CreateProject />,
+        path: paths.user.perfil,
+        element: <Perfil />,
+      },
+      {
+        path: paths.user.landingPage,
+        element: <LandingPage />,
       },
       {
         path: paths.user.servidores,
