@@ -1,60 +1,86 @@
 import React from "react";
-import { Formik, Form, Field, ErrorMessage } from "formik";
+import { Formik, Form, Field, ErrorMessage, FormikHelpers } from "formik";
 import { Eye, EyeOff } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { useAuth } from "@/auth/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import { registerSchema } from "@/auth/schemas";
+import { api } from "@/api/auth";
+import { paths } from "@/routes/paths";
+import { toast } from "sonner";
+
+interface RegisterFormValues {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
 
 export default function RegisterForm() {
-  const { register } = useAuth();
   const [showPassword, setShowPassword] = React.useState(false);
+  const navigate = useNavigate();
+
+  const initialValues: RegisterFormValues = {
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  };
+
+  const handleRegister = async (
+    values: RegisterFormValues,
+    { resetForm, setSubmitting }: FormikHelpers<RegisterFormValues>
+  ) => {
+    console.log("Register button clicked");
+    console.log("Values:", { ...values, password: "***" });
+
+    try {
+      const { username, email, password } = values;
+
+      if (!username || !email || !password) {
+        toast.error("Por favor complete todos los campos");
+        return;
+      }
+
+      const response = await api.registerLocal({
+        username,
+        email,
+        password,
+        role: "user",
+      });
+
+      console.log("Registration response:", response);
+
+      if (response.success) {
+        toast.success("Registro exitoso. Por favor, inicia sesión.");
+        resetForm();
+        navigate(paths.auth.login);
+      } else {
+        toast.error(response.error || "Error al registrar usuario");
+      }
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Error al procesar el registro");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
     <div className="rounded-lg bg-white p-6 shadow-lg">
       <Formik
-        initialValues={{
-          username: "",
-          email: "",
-          password: "",
-          confirmPassword: "",
-        }}
+        initialValues={initialValues}
         validationSchema={registerSchema}
-        onSubmit={async (values, { setSubmitting }) => {
-          const success = await register(
-            values.username,
-            values.email,
-            values.password
-          );
-          if (!success) {
-            setSubmitting(false);
-          }
-        }}
+        onSubmit={handleRegister}
       >
-        {({ isSubmitting }) => (
-          <Form className="space-y-5">
+        {({ isSubmitting, handleSubmit }) => (
+          <Form className="space-y-5" onSubmit={handleSubmit}>
             <div className="space-y-1">
               <Label htmlFor="username" className="text-sm font-medium">
                 Nombre
               </Label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                </div>
                 <Field
                   as={Input}
                   type="text"
@@ -69,7 +95,6 @@ export default function RegisterForm() {
                 component="div"
                 className="text-red-500 text-sm mt-1"
               />
-              <p className="text-xs text-gray-500">Ingresa tu nombre</p>
             </div>
 
             <div className="space-y-1">
@@ -77,21 +102,6 @@ export default function RegisterForm() {
                 Correo electrónico
               </Label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
-                </div>
                 <Field
                   as={Input}
                   type="email"
@@ -106,9 +116,6 @@ export default function RegisterForm() {
                 component="div"
                 className="text-red-500 text-sm mt-1"
               />
-              <p className="text-xs text-gray-500">
-                Ingresa tu correo electrónico
-              </p>
             </div>
 
             <div className="space-y-1">
@@ -116,21 +123,6 @@ export default function RegisterForm() {
                 Contraseña
               </Label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </div>
                 <Field
                   as={Input}
                   type={showPassword ? "text" : "password"}
@@ -156,7 +148,6 @@ export default function RegisterForm() {
                 component="div"
                 className="text-red-500 text-sm mt-1"
               />
-              <p className="text-xs text-gray-500">Ingresa tu contraseña</p>
             </div>
 
             <div className="space-y-1">
@@ -164,28 +155,13 @@ export default function RegisterForm() {
                 Confirmar Contraseña
               </Label>
               <div className="relative">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <svg
-                    className="h-5 w-5 text-gray-400"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                    <circle cx="12" cy="12" r="3"></circle>
-                  </svg>
-                </div>
                 <Field
                   as={Input}
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="confirmPassword"
                   id="confirmPassword"
                   placeholder="Confirma tu contraseña"
-                  className="pl-10"
+                  className="pl-10 pr-10"
                 />
               </div>
               <ErrorMessage
@@ -193,7 +169,6 @@ export default function RegisterForm() {
                 component="div"
                 className="text-red-500 text-sm mt-1"
               />
-              <p className="text-xs text-gray-500">Confirma tu contraseña</p>
             </div>
 
             <Button

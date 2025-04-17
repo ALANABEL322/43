@@ -1,82 +1,76 @@
-import React, { createContext, useEffect, useContext, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { loginSchema, registerSchema } from './schemas';
-import { useAuthStore, User } from '@/store/useUserStore';
-import { paths } from '@/routes/paths';
-
+import React, { createContext, useEffect, useContext, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { useAuthStore, User } from "@/store/authStore";
+import { paths } from "@/routes/paths";
+import { api } from "@/api/auth";
 
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (username: string, email: string, password: string) => Promise<boolean>;
   logout: () => void;
-  isAdmin: boolean; 
+  isAdmin: boolean;
   isLoading: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { 
-    user, 
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const {
+    user,
     isAuthenticated,
-    login: zustandLogin, 
-    logout: zustandLogout, 
-    register: zustandRegister,
-    isAdmin
+    logout: zustandLogout,
+    isAdmin,
   } = useAuthStore();
-  
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [initialRedirectDone, setInitialRedirectDone] = useState(false);
 
   useEffect(() => {
-    if (isAuthenticated && user) {
-      navigate(user.role === 'admin' ? paths.admin.dashboard : paths.user.landingPage);
-    }
-  }, [isAuthenticated, user, navigate]);
+    if (isAuthenticated && user && !initialRedirectDone) {
+      const isAuthPage = location.pathname.startsWith(paths.auth.login);
+      const isAdminPath = location.pathname.startsWith(paths.admin.root);
+      const isUserPath = location.pathname.startsWith(paths.user.root);
 
-  const [isLoading, setIsLoading] = useState(false);
+      if (isAuthPage || location.pathname === "/") {
+        const targetPath =
+          user.role === "admin"
+            ? paths.admin.dashboard
+            : paths.user.landingPage;
+
+        navigate(targetPath);
+        setInitialRedirectDone(true);
+      }
+    }
+  }, [isAuthenticated, user, navigate, location, initialRedirectDone]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setInitialRedirectDone(false);
+    }
+  }, [isAuthenticated]);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    try {
-      await loginSchema.validate({ email, password });
-      const success = zustandLogin(email, password);
-      
-      if (success) {
-        const targetPath = isAdmin() ? paths.admin.dashboard : paths.user.landingPage;
-        navigate(targetPath);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    }
-  };
-
-  const register = async (username: string, email: string, password: string): Promise<boolean> => {
-    try {
-      await registerSchema.validate({ username, email, password });
-      const success = zustandRegister(email, password, username);
-      
-      if (success) {
-        navigate(paths.user.landingPage);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Register error:', error);
-      return false;
-    }
-  };
-
-  const logout = () => {
-    zustandLogout();
-    navigate(paths.auth.login);
+    const response = await api.login(email, password);
+    setIsLoading(false);
+    return response.success;
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, isAdmin: isAdmin(), isLoading }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        login,
+        logout: zustandLogout,
+        isAdmin: isAdmin(),
+        isLoading,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -85,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth debe ser usado dentro de un AuthProvider');
+    throw new Error("useAuth debe ser usado dentro de un AuthProvider");
   }
   return context;
 }
