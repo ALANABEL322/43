@@ -1,7 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import axios from "axios";
-import { API_URL } from "@/api/auth";
 
 export type UserRole = "admin" | "user";
 
@@ -22,111 +20,96 @@ interface AuthState {
   isAdmin: () => boolean;
   isUser: () => boolean;
   role: UserRole | null;
-  login: (email: string, password: string) => Promise<boolean>;
-  registerLocalUser: (user: Omit<User, "id">) => User;
-  logout: () => void;
-  findLocalUserByEmail: (email: string) => User | undefined;
+  setAuthenticated: (value: boolean) => void;
   setCurrentUser: (user: User | null) => void;
+  registerLocalUser: (userData: Omit<User, "id">) => User;
+  findLocalUserByEmail: (email: string) => User | undefined;
+  logout: () => void;
   getCurrentUser: () => User | null;
 }
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
-      user: null,
-      currentUser: null,
-      localUsers: [],
-      isAuthenticated: false,
-      role: null,
-      isAdmin: () => {
-        const user = get().user;
-        return user?.role === "admin" || user?.email === "ADMIN123@gmail.com";
-      },
-      isUser: () => get().user?.role === "user",
+    (set, get) => {
 
-      login: async (email, password) => {
-        if (email === "ADMIN123@gmail.com" && password === "ADMIN123") {
-          const adminUser: User = {
-            id: "system-admin",
-            email: "ADMIN123@gmail.com",
-            username: "System Administrator",
-            role: "admin",
-            isSystemAdmin: true,
-          };
-          set({
-            user: adminUser,
-            currentUser: adminUser,
-            isAuthenticated: true,
-            role: "admin",
-          });
-          return true;
-        }
+      return {
+        user: null,
+        currentUser: null,
+        localUsers: [],
+        isAuthenticated: false,
+        role: null,
 
-        const localUser = get().findLocalUserByEmail(email);
-        if (localUser && localUser.password === password) {
-          set({
-            user: localUser,
-            currentUser: localUser,
-            isAuthenticated: true,
-            role: localUser.role,
-          });
-          return true;
-        }
-        const response = await axios.get(`${API_URL}/users`, {
-          params: {
-            "filters[email][$eq]": email,
-          },
-        });
+        setAuthenticated: (value: boolean) => {
+          console.log("AuthStore: Setting authenticated:", value);
+          set({ isAuthenticated: value });
+        },
 
-        const users = response.data;
-        if (users && users.length > 0) {
-          const userData = users[0];
-          const user: User = {
-            id: userData.id,
-            email: userData.email,
-            username: userData.username || email.split("@")[0],
-            role: email.includes("admin") ? "admin" : "user",
-          };
+        setCurrentUser: (user: User | null) => {
           set({
-            user,
             currentUser: user,
-            isAuthenticated: true,
-            role: user.role,
+            user: user,
+            isAuthenticated: !!user,
+            role: user?.role || null,
           });
-          return true;
-        }
+        },
 
-        return false;
-      },
+        isAdmin: () => {
+          const user = get().user;
+          return user?.role === "admin" || user?.isSystemAdmin === true;
+        },
 
-      registerLocalUser: (newUser) => {
-        const user = {
-          ...newUser,
-          id: `local-${Date.now()}`,
-        };
-        set((state) => ({
-          localUsers: [...state.localUsers, user],
-        }));
-        return user;
-      },
+        isUser: () => get().user?.role === "user",
 
-      logout: () =>
-        set({
-          user: null,
-          currentUser: null,
-          isAuthenticated: false,
-          role: null,
-        }),
+        registerLocalUser: (userData: Omit<User, "id">) => {
+          console.log("AuthStore: Registering local user:", userData.email);
 
-      findLocalUserByEmail: (email) => {
-        return get().localUsers.find((user) => user.email === email);
-      },
+          const user: User = {
+            ...userData,
+            id: `local-${Date.now()}`,
+          };
 
-      setCurrentUser: (user) => set({ currentUser: user }),
-      getCurrentUser: () => get().currentUser,
-    }),
+          set((state) => {
+            const newLocalUsers = [...state.localUsers, user];
+            console.log(
+              "AuthStore: Updated local users count:",
+              newLocalUsers.length
+            );
+            return { localUsers: newLocalUsers };
+          });
+
+          return user;
+        },
+
+        findLocalUserByEmail: (email: string) => {
+          const users = get().localUsers;
+          console.log("AuthStore: Finding local user by email:", email);
+          const user = users.find((u) => u.email === email);
+          console.log("AuthStore: Local user found:", !!user);
+          return user;
+        },
+
+        logout: () => {
+          console.log("AuthStore: Logging out");
+          set({
+            user: null,
+            currentUser: null,
+            isAuthenticated: false,
+            role: null,
+          });
+        },
+
+        getCurrentUser: () => get().currentUser,
+      };
+    },
     {
       name: "auth-storage",
     }
   )
 );
+
+// const initialState = useAuthStore.getState();
+// console.log("AuthStore: Initial state:", {
+//   userCount: initialState.localUsers.length,
+//   isAuthenticated: initialState.isAuthenticated,
+//   hasUser: !!initialState.user,
+// });
