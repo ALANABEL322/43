@@ -37,16 +37,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       const isUserPath = location.pathname.startsWith(paths.user.root);
 
       if (isAuthPage || location.pathname === "/") {
-        const targetPath =
-          user.role === "admin"
-            ? paths.admin.dashboard
-            : paths.user.landingPage;
-
-        navigate(targetPath);
+        if (isAdmin()) {
+          navigate(paths.admin.dashboard);
+        } else {
+          navigate(paths.user.landingPage);
+        }
+        setInitialRedirectDone(true);
+      } else {
+        if (isAdmin() && !isAdminPath) {
+          navigate(paths.admin.dashboard);
+        } else if (!isAdmin() && !isUserPath) {
+          navigate(paths.user.landingPage);
+        }
         setInitialRedirectDone(true);
       }
     }
-  }, [isAuthenticated, user, navigate, location, initialRedirectDone]);
+  }, [isAuthenticated, user, navigate, location, initialRedirectDone, isAdmin]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -58,6 +64,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     setIsLoading(true);
     const response = await api.login(email, password);
     setIsLoading(false);
+
+    if (response.success) {
+      const currentUser = useAuthStore.getState().user;
+      if (currentUser) {
+        if (currentUser.role === "admin") {
+          navigate(paths.admin.dashboard);
+        } else {
+          navigate(paths.user.landingPage);
+        }
+      }
+    }
+
     return response.success;
   };
 
