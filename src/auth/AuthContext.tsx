@@ -2,15 +2,11 @@ import React, { createContext, useEffect, useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuthStore, User } from "@/store/authStore";
 import { paths } from "@/routes/paths";
+import { api } from "@/api/auth";
 
 export interface AuthContextType {
   user: User | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (
-    username: string,
-    email: string,
-    password: string
-  ) => Promise<boolean>;
   logout: () => void;
   isAdmin: boolean;
   isLoading: boolean;
@@ -26,7 +22,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const {
     user,
     isAuthenticated,
-    login: zustandLogin,
     logout: zustandLogout,
     isAdmin,
   } = useAuthStore();
@@ -43,7 +38,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       if (isAuthPage || location.pathname === "/") {
         const targetPath =
-          user.role === "admin" ? paths.admin.dashboard : paths.user.landingPage;
+          user.role === "admin"
+            ? paths.admin.dashboard
+            : paths.user.landingPage;
 
         navigate(targetPath);
         setInitialRedirectDone(true);
@@ -59,27 +56,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true);
-    const success = await zustandLogin(email, password);
+    const response = await api.login(email, password);
     setIsLoading(false);
-    return success;
-  };
-
-  const register = async (
-    username: string,
-    email: string,
-    password: string
-  ): Promise<boolean> => {
-    return false;
-  };
-
-  const logout = () => {
-    zustandLogout();
-    navigate(paths.auth.login);
+    return response.success;
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, login, register, logout, isAdmin: isAdmin(), isLoading }}
+      value={{
+        user,
+        login,
+        logout: zustandLogout,
+        isAdmin: isAdmin(),
+        isLoading,
+      }}
     >
       {children}
     </AuthContext.Provider>
