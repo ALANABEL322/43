@@ -18,6 +18,7 @@ import {
   LogOut,
   LayoutDashboard,
   CircleAlert,
+  User,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
@@ -58,6 +59,16 @@ export default function SidebarUser() {
                   >
                     <LayoutDashboard className="h-4 w-4 text-white" />
                     <span className="text-white">Inicio</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => navigate(paths.user.perfil)}
+                    className="w-full"
+                  >
+                    <User className="h-4 w-4 text-white" />
+                    <span className="text-white">Perfil</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 

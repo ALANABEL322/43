@@ -6,6 +6,7 @@ import {
   LogOut,
   LayoutDashboard,
   CircleAlert,
+  User,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -22,7 +23,13 @@ export default function SidebarUserMobile({
       icon: LayoutDashboard,
       path: "/dashboard/inicio",
       tooltip: "inicio",
-      color: "#E65100",
+      color: "#ebcbae",
+    },
+    {
+      icon: User,
+      path: "/dashboard/perfil",
+      tooltip: "perfil",
+      color: "#e8c102",
     },
     {
       icon: Database,
@@ -34,7 +41,7 @@ export default function SidebarUserMobile({
       icon: CircleAlert,
       path: "/dashboard/panel-de-alertas",
       tooltip: "panel de alertas",
-      color: "#66BB6A",
+      color: "#e77927",
     },
     {
       icon: Handshake,
