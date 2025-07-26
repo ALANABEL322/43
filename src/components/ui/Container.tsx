@@ -11,7 +11,7 @@ export default function Container({ children, className }: ContainerProps) {
     <div className={cn(
       'flex flex-col min-h-screen',
       'pt-16',
-      'px-4', 
+   
       className
     )}>
       {children}

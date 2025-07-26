@@ -4,31 +4,50 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Crown, User } from "lucide-react";
 import { paths } from "@/routes/paths";
+<<<<<<< HEAD
 import { api } from "@/api/auth";
 import { toast } from "sonner";
+=======
+import { api, MOCK_USERS } from "@/api/auth";
+>>>>>>> main
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+<<<<<<< HEAD
+=======
+  const [error, setError] = useState("");
+>>>>>>> main
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+<<<<<<< HEAD
+=======
+    setError("");
+>>>>>>> main
     setIsLoading(true);
 
     try {
       const response = await api.login(email, password);
       if (response.success) {
         const userRole = useAuthStore.getState().user?.role;
+<<<<<<< HEAD
 
         if (userRole === "admin") {
           navigate(paths.admin.dashboard);
         } else {
           navigate(paths.user.landingPage);
+=======
+        if (userRole === "admin") {
+          navigate("/admin/dashboard");
+        } else {
+          navigate("/user");
+>>>>>>> main
         }
 
         toast.success("Inicio de sesión exitoso");
@@ -36,15 +55,54 @@ export default function LoginForm() {
         toast.error(response.error || "Error al iniciar sesión");
       }
     } catch (err) {
+<<<<<<< HEAD
       toast.error("Error al iniciar sesión");
+=======
+      setError("Error al iniciar sesión");
+>>>>>>> main
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleQuickLogin = (userType: "admin" | "user") => {
+    const user = MOCK_USERS[userType];
+    setEmail(user.email);
+    setPassword(user.password);
+    setError("");
+  };
+
   return (
-    <div className="rounded-lg bg-white p-6 shadow-lg">
-      <h2 className="text-2xl font-bold mb-4">Iniciar Sesión</h2>
+    <div className="rounded-lg bg-white p-6 shadow-lg max-w-md w-full">
+      <h2 className="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+
+      {/* Botones de acceso rápido */}
+      <div className="mb-6 space-y-3">
+        <p className="text-sm text-gray-600 text-center mb-3">
+          Acceso rápido para pruebas:
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleQuickLogin("admin")}
+            className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
+          >
+            <Crown className="h-4 w-4 text-blue-600" />
+            <span className="text-sm">Admin</span>
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleQuickLogin("user")}
+            className="flex items-center gap-2 bg-green-50 hover:bg-green-100 border-green-200"
+          >
+            <User className="h-4 w-4 text-green-600" />
+            <span className="text-sm">Usuario</span>
+          </Button>
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
@@ -55,7 +113,10 @@ export default function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Ingresa tu email"
             className="w-full"
+<<<<<<< HEAD
             disabled={isLoading}
+=======
+>>>>>>> main
             required
           />
         </div>
@@ -70,7 +131,10 @@ export default function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ingresa tu contraseña"
               className="w-full pr-10"
+<<<<<<< HEAD
               disabled={isLoading}
+=======
+>>>>>>> main
               required
             />
             <button
@@ -79,10 +143,20 @@ export default function LoginForm() {
               onClick={() => setShowPassword(!showPassword)}
               disabled={isLoading}
             >
-              {showPassword ? <EyeOff /> : <Eye />}
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
             </button>
           </div>
         </div>
+
+        {error && (
+          <div className="text-red-500 text-sm bg-red-50 p-3 rounded-md">
+            {error}
+          </div>
+        )}
 
         <Button
           type="submit"
