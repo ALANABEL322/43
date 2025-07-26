@@ -16,17 +16,73 @@ export interface APIUser {
   avatar: string;
 }
 
+// Usuarios mockeados predefinidos para fácil acceso
+export const MOCK_USERS = {
+  admin: {
+    email: "admin@test.com",
+    password: "admin123",
+    username: "Administrador",
+    role: "admin" as UserRole,
+  },
+  user: {
+    email: "user@test.com",
+    password: "user123",
+    username: "Usuario",
+    role: "user" as UserRole,
+  },
+  // Mantener el admin original como respaldo
+  systemAdmin: {
+    email: "ADMIN123@gmail.com",
+    password: "ADMIN123",
+    username: "System Administrator",
+    role: "admin" as UserRole,
+    isSystemAdmin: true,
+  },
+};
+
 export const api = {
   async login(email: string, password: string) {
     console.log("Auth API: Login attempt for:", email);
     try {
-      if (email === "ADMIN123@gmail.com" && password === "ADMIN123") {
+      // Verificar usuarios mockeados primero
+      const mockAdmin = MOCK_USERS.admin;
+      const mockUser = MOCK_USERS.user;
+      const systemAdmin = MOCK_USERS.systemAdmin;
+
+      // Verificar admin mockeado
+      if (email === mockAdmin.email && password === mockAdmin.password) {
+        const adminUser: User = {
+          id: "mock-admin",
+          email: mockAdmin.email,
+          username: mockAdmin.username,
+          role: mockAdmin.role,
+        };
+
+        useAuthStore.getState().setCurrentUser(adminUser);
+        return { success: true, user: adminUser };
+      }
+
+      // Verificar usuario normal mockeado
+      if (email === mockUser.email && password === mockUser.password) {
+        const normalUser: User = {
+          id: "mock-user",
+          email: mockUser.email,
+          username: mockUser.username,
+          role: mockUser.role,
+        };
+
+        useAuthStore.getState().setCurrentUser(normalUser);
+        return { success: true, user: normalUser };
+      }
+
+      // Verificar admin del sistema (mantener compatibilidad)
+      if (email === systemAdmin.email && password === systemAdmin.password) {
         const adminUser: User = {
           id: "system-admin",
-          email: "ADMIN123@gmail.com",
-          username: "System Administrator",
-          role: "admin" as UserRole,
-          isSystemAdmin: true,
+          email: systemAdmin.email,
+          username: systemAdmin.username,
+          role: systemAdmin.role,
+          isSystemAdmin: systemAdmin.isSystemAdmin,
         };
 
         useAuthStore.getState().setCurrentUser(adminUser);

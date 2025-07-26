@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Trash2, ChevronLeft, ChevronRight, Edit } from "lucide-react";
-import { api } from "@/api/auth";
 import { toast } from "sonner";
 
 interface User {
@@ -15,28 +14,78 @@ interface User {
   avatar?: string;
 }
 
+// Usuarios mockeados
+const MOCK_USERS: User[] = [
+  {
+    id: 1,
+    name: "María González",
+    email: "maria.gonzalez@empresa.com",
+    role: "Usuario",
+    phone: "+34 612 345 678",
+    avatar:
+      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    id: 2,
+    name: "Carlos Rodríguez",
+    email: "carlos.rodriguez@empresa.com",
+    role: "Usuario",
+    phone: "+34 623 456 789",
+    avatar:
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    id: 3,
+    name: "Ana Martínez",
+    email: "ana.martinez@empresa.com",
+    role: "Usuario",
+    phone: "+34 634 567 890",
+    avatar:
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    id: 4,
+    name: "Luis Fernández",
+    email: "luis.fernandez@empresa.com",
+    role: "Usuario",
+    phone: "+34 645 678 901",
+    avatar:
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    id: 5,
+    name: "Sofia López",
+    email: "sofia.lopez@empresa.com",
+    role: "Usuario",
+    phone: "+34 656 789 012",
+    avatar:
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+  },
+];
+
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [users, setUsers] = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<User[]>(MOCK_USERS);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    loadUsers();
+    // Simular carga inicial
+    setLoading(true);
+    setTimeout(() => {
+      setUsers(MOCK_USERS);
+      setLoading(false);
+    }, 500);
   }, []);
 
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const response = await api.getUsers();
-      if (response.success && response.users) {
-        setUsers(response.users);
-      } else {
-        setUsers([]);
-        toast.error(response.error || "Error al cargar usuarios");
-      }
+      // Simular delay de carga
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      setUsers(MOCK_USERS);
+      toast.success("Lista de usuarios actualizada");
     } catch (error) {
-      setUsers([]);
       toast.error("Error al cargar la lista de usuarios");
     } finally {
       setLoading(false);

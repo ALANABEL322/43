@@ -19,7 +19,8 @@ import DashboardAdmin from "@/screens/(admin)/dashboard";
 // User pages
 import CreateProject from "@/screens/(user)/createProject";
 import Projects from "@/screens/(user)/projects";
-import LandingPage from "@/screens/(user)/landingPage";
+import LandingPage from "@/screens/(user)/landingpage/landingPage";
+import { UserDashboard } from "@/screens/(user)/dashboard";
 import { UserSupportPage } from "@/screens/(user)/support";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -93,11 +94,15 @@ export const userRoutes: RouteObject[] = [
         element: <LandingPage />,
       },
       {
-        path: paths.user.createProject,
+        path: paths.user.dashboard,
+        element: <UserDashboard />,
+      },
+      {
+        path: paths.user.servidores,
         element: <CreateProject />,
       },
       {
-        path: paths.user.projects,
+        path: paths.user.alertas,
         element: <Projects />,
       },
       {

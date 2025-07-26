@@ -62,11 +62,38 @@ export default function Config() {
   };
 
   // Sample firewall rules data
-  const firewallRules = Array(6).fill({
-    title: "Lorem ipsum",
-    description:
-      "Lorem ipsum dolor sit amet consectetur. Gravida commodo cras enim iaculis suscipit convallis augue eget dictumst. Integer nulla sem massa sed eleifend ultricies vitae at. Pulvinar duis malesuada commodo condimentum felis. Morbi hendrerit sociales aliquam a diam viverra nunc.",
-  });
+  const firewallRules = [
+    {
+      title: "Bloqueo de Puertos Comunes",
+      description:
+        "Bloquea el acceso a puertos comúnmente utilizados para ataques: 22 (SSH), 23 (Telnet), 3389 (RDP), 1433 (SQL Server), 3306 (MySQL). Protege contra intrusiones no autorizadas y ataques de fuerza bruta.",
+    },
+    {
+      title: "Filtrado de IPs Maliciosas",
+      description:
+        "Implementa listas negras de direcciones IP conocidas por actividades maliciosas. Bloquea automáticamente conexiones desde IPs asociadas con spam, malware, ataques DDoS y otras amenazas cibernéticas.",
+    },
+    {
+      title: "Control de Acceso por Protocolo",
+      description:
+        "Permite solo tráfico HTTP (puerto 80) y HTTPS (puerto 443) para aplicaciones web. Restringe el acceso a otros protocolos como FTP, SMTP y servicios de base de datos desde redes externas.",
+    },
+    {
+      title: "Protección contra DDoS",
+      description:
+        "Configura límites de tasa para prevenir ataques de denegación de servicio distribuido. Limita el número de conexiones simultáneas por IP y establece umbrales de tráfico para detectar anomalías.",
+    },
+    {
+      title: "Reglas de Geolocalización",
+      description:
+        "Restringe el acceso basado en la ubicación geográfica de las IPs. Permite conexiones solo desde países específicos y bloquea regiones con alta actividad de cibercrimen o restricciones legales.",
+    },
+    {
+      title: "Monitoreo de Tráfico Anómalo",
+      description:
+        "Implementa detección de patrones de tráfico inusuales. Alerta sobre conexiones a horas no laborables, transferencias de archivos grandes, o múltiples intentos de acceso fallidos desde la misma IP.",
+    },
+  ];
 
   return (
     <div className="w-full max-w-5xl mx-auto p-6 space-y-8">
@@ -153,7 +180,7 @@ export default function Config() {
           <div className="space-y-2">
             <label
               htmlFor="storage"
-              className="text-sm font-medium text-gray-700"
+               className="text-sm font-medium text-gray-700"
             >
               Almacenamiento
             </label>

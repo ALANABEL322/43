@@ -15,9 +15,10 @@ export const paths = {
   // User routes
   user: {
     root: "/user",
-    landingPage: "/user/landingPage",
-    createProject: "/user/createProject",
-    projects: "/user/projects",
+    landingPage: "/user",
+    dashboard: "/user/dashboard",
+    servidores: "/user/servidores",
+    alertas: "/user/alertas",
     support: "/user/support",
   },
   // Root route

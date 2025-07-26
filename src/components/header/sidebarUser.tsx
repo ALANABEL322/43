@@ -11,7 +11,14 @@ import {
   SidebarMenuButton,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { Home, Users, FileText, LogOut } from "lucide-react";
+import {
+  Home,
+  Users,
+  Server,
+  AlertTriangle,
+  LogOut,
+  BarChart3,
+} from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
 import { paths } from "@/routes/paths";
@@ -46,7 +53,7 @@ export default function SidebarUser() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.root)}
+                    onClick={() => navigate(paths.user.landingPage)}
                     className="w-full"
                   >
                     <Home className="h-4 w-4 text-white" />
@@ -56,21 +63,31 @@ export default function SidebarUser() {
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.createProject)}
+                    onClick={() => navigate(paths.user.dashboard)}
                     className="w-full"
                   >
-                    <FileText className="h-4 w-4 text-white" />
-                    <span className="text-white">Crear Proyecto</span>
+                    <BarChart3 className="h-4 w-4 text-white" />
+                    <span className="text-white">Dashboard</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.projects)}
+                    onClick={() => navigate(paths.user.servidores)}
                     className="w-full"
                   >
-                    <FileText className="h-4 w-4 text-white" />
-                    <span className="text-white">Mis Proyectos</span>
+                    <Server className="h-4 w-4 text-white" />
+                    <span className="text-white">Servidores</span>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    onClick={() => navigate(paths.user.alertas)}
+                    className="w-full"
+                  >
+                    <AlertTriangle className="h-4 w-4 text-white" />
+                    <span className="text-white">Panel de Alertas</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
