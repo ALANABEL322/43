@@ -6,48 +6,30 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Crown, User } from "lucide-react";
 import { paths } from "@/routes/paths";
-<<<<<<< HEAD
-import { api } from "@/api/auth";
-import { toast } from "sonner";
-=======
 import { api, MOCK_USERS } from "@/api/auth";
->>>>>>> main
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-<<<<<<< HEAD
-=======
   const [error, setError] = useState("");
->>>>>>> main
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-<<<<<<< HEAD
-=======
     setError("");
->>>>>>> main
     setIsLoading(true);
 
     try {
       const response = await api.login(email, password);
       if (response.success) {
         const userRole = useAuthStore.getState().user?.role;
-<<<<<<< HEAD
-
-        if (userRole === "admin") {
-          navigate(paths.admin.dashboard);
-        } else {
-          navigate(paths.user.landingPage);
-=======
         if (userRole === "admin") {
           navigate("/admin/dashboard");
         } else {
           navigate("/user");
->>>>>>> main
         }
 
         toast.success("Inicio de sesión exitoso");
@@ -55,11 +37,7 @@ export default function LoginForm() {
         toast.error(response.error || "Error al iniciar sesión");
       }
     } catch (err) {
-<<<<<<< HEAD
-      toast.error("Error al iniciar sesión");
-=======
       setError("Error al iniciar sesión");
->>>>>>> main
     } finally {
       setIsLoading(false);
     }
@@ -113,10 +91,6 @@ export default function LoginForm() {
             onChange={(e) => setEmail(e.target.value)}
             placeholder="Ingresa tu email"
             className="w-full"
-<<<<<<< HEAD
-            disabled={isLoading}
-=======
->>>>>>> main
             required
           />
         </div>
@@ -131,10 +105,6 @@ export default function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Ingresa tu contraseña"
               className="w-full pr-10"
-<<<<<<< HEAD
-              disabled={isLoading}
-=======
->>>>>>> main
               required
             />
             <button
