@@ -13,12 +13,20 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Home,
+<<<<<<< HEAD
   Handshake,
   Database,
   LogOut,
   LayoutDashboard,
   CircleAlert,
   User,
+=======
+  Users,
+  Server,
+  AlertTriangle,
+  LogOut,
+  BarChart3,
+>>>>>>> main
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
@@ -54,7 +62,11 @@ export default function SidebarUser() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
+<<<<<<< HEAD
                     onClick={() => navigate(paths.user.inicio)}
+=======
+                    onClick={() => navigate(paths.user.landingPage)}
+>>>>>>> main
                     className="w-full"
                   >
                     <LayoutDashboard className="h-4 w-4 text-white" />
@@ -64,11 +76,19 @@ export default function SidebarUser() {
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
+<<<<<<< HEAD
                     onClick={() => navigate(paths.user.perfil)}
                     className="w-full"
                   >
                     <User className="h-4 w-4 text-white" />
                     <span className="text-white">Perfil</span>
+=======
+                    onClick={() => navigate(paths.user.dashboard)}
+                    className="w-full"
+                  >
+                    <BarChart3 className="h-4 w-4 text-white" />
+                    <span className="text-white">Dashboard</span>
+>>>>>>> main
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
@@ -77,18 +97,30 @@ export default function SidebarUser() {
                     onClick={() => navigate(paths.user.servidores)}
                     className="w-full"
                   >
+<<<<<<< HEAD
                     <Database className="h-4 w-4 text-white" />
+=======
+                    <Server className="h-4 w-4 text-white" />
+>>>>>>> main
                     <span className="text-white">Servidores</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
+<<<<<<< HEAD
                     onClick={() => navigate(paths.user.panelDeAlertas)}
                     className="w-full"
                   >
                     <CircleAlert className="h-4 w-4 text-white" />
                     <span className="text-white">Panel de alertas</span>
+=======
+                    onClick={() => navigate(paths.user.alertas)}
+                    className="w-full"
+                  >
+                    <AlertTriangle className="h-4 w-4 text-white" />
+                    <span className="text-white">Panel de Alertas</span>
+>>>>>>> main
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 

@@ -17,8 +17,15 @@ import AdminSupportPage from "@/screens/(admin)/support";
 import DashboardAdmin from "@/screens/(admin)/dashboard";
 
 // User pages
+<<<<<<< HEAD
 import Projects from "@/screens/(user)/servidores";
 import LandingPage from "@/screens/(user)/landingPage";
+=======
+import CreateProject from "@/screens/(user)/createProject";
+import Projects from "@/screens/(user)/projects";
+import LandingPage from "@/screens/(user)/landingpage/landingPage";
+import { UserDashboard } from "@/screens/(user)/dashboard";
+>>>>>>> main
 import { UserSupportPage } from "@/screens/(user)/support";
 import ProtectedRoute from "./ProtectedRoute";
 import { Inicio } from "@/screens/(user)/inicio";
@@ -102,11 +109,23 @@ export const userRoutes: RouteObject[] = [
         element: <LandingPage />,
       },
       {
+<<<<<<< HEAD
         path: paths.user.servidores,
         element: <Projects />,
       },
       {
         path: paths.user.panelDeAlertas,
+=======
+        path: paths.user.dashboard,
+        element: <UserDashboard />,
+      },
+      {
+        path: paths.user.servidores,
+        element: <CreateProject />,
+      },
+      {
+        path: paths.user.alertas,
+>>>>>>> main
         element: <Projects />,
       },
       {

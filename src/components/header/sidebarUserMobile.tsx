@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import {
+<<<<<<< HEAD
   Home,
   Handshake,
   Database,
@@ -9,6 +10,17 @@ import {
   User,
 } from "lucide-react";
 import { motion } from "framer-motion";
+=======
+  LifeBuoy,
+  LogOut,
+  Server,
+  AlertTriangle,
+  BarChart3,
+} from "lucide-react";
+import { motion } from "framer-motion";
+import { paths } from "@/routes/paths";
+import { useAuthStore } from "@/store/authStore";
+>>>>>>> main
 
 interface SidebarUserMobileProps {
   visible?: boolean;
@@ -18,8 +30,16 @@ export default function SidebarUserMobile({
   visible = true,
 }: SidebarUserMobileProps) {
   const navigate = useNavigate();
+  const { logout } = useAuthStore();
+
+  const handleLogout = () => {
+    logout();
+    navigate(paths.auth.login);
+  };
+
   const menuItems = [
     {
+<<<<<<< HEAD
       icon: LayoutDashboard,
       path: "/dashboard/inicio",
       tooltip: "inicio",
@@ -47,11 +67,38 @@ export default function SidebarUserMobile({
       icon: Handshake,
       path: "/dashboard/soporte",
       tooltip: "soporte",
+=======
+      icon: BarChart3,
+      path: paths.user.dashboard,
+      tooltip: "Dashboard",
+      color: "#8B5CF6",
+    },
+    {
+      icon: Server,
+      path: paths.user.servidores,
+      tooltip: "Servidores",
+      color: "#E65100",
+    },
+    {
+      icon: AlertTriangle,
+      path: paths.user.alertas,
+      tooltip: "Panel de Alertas",
+      color: "#26C6DA",
+    },
+    {
+      icon: LifeBuoy,
+      path: paths.user.support,
+      tooltip: "Soporte",
+>>>>>>> main
       color: "#66BB6A",
     },
     {
       icon: LogOut,
+<<<<<<< HEAD
       path: "/login",
+=======
+      action: handleLogout,
+>>>>>>> main
       tooltip: "Cerrar sesión",
       color: "#EF5350",
     },
@@ -73,7 +120,7 @@ export default function SidebarUserMobile({
           key={index}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => navigate(item.path)}
+          onClick={() => (item.action ? item.action() : navigate(item.path!))}
           className="relative p-4 group"
           title={item.tooltip}
         >
