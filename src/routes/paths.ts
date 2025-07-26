@@ -16,16 +16,12 @@ export const paths = {
   user: {
     root: "/user",
     landingPage: "/user",
-<<<<<<< HEAD
     inicio: "/user/inicio",
     servidores: "/user/servidores", 
     perfil: "/user/perfil",
     panelDeAlertas: "/user/panel-de-alertas",
-=======
     dashboard: "/user/dashboard",
-    servidores: "/user/servidores",
     alertas: "/user/alertas",
->>>>>>> main
     support: "/user/support",
   },
   // Root route
