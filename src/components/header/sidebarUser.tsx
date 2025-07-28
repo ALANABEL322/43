@@ -85,7 +85,7 @@ export default function SidebarUser() {
 
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.alertas)}
+                    onClick={() => navigate(paths.user.panelDeAlertas)}
                     className="w-full"
                   >
                     <AlertTriangle className="h-4 w-4 text-white" />

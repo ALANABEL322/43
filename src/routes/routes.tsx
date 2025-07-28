@@ -26,6 +26,9 @@ import Perfil from "@/screens/(user)/perfil";
 import Servidores from "@/screens/(user)/servidores";
 import ServidoresProcesando from "@/screens/(user)/servidoresProcesando";
 import ServidoresRecomendaciones from "@/screens/(user)/servidoresRecomendaciones";
+import PanelDeAlertas from "@/screens/(user)/panelDeAlertas";
+import Rendimiento from "@/screens/(user)/rendimiento";
+import Configuracion from "@/screens/(user)/configuracion";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -111,6 +114,18 @@ export const userRoutes: RouteObject[] = [
       {
         path: paths.user.support,
         element: <UserSupportPage />,
+      },
+      {
+        path: paths.user.panelDeAlertas,
+        element: <PanelDeAlertas />,
+      },
+      {
+        path: paths.user.rendimiento,
+        element: <Rendimiento />,
+      },
+      {
+        path: paths.user.configuracion,
+        element: <Configuracion />,
       },
       {
         path: paths.user.servidores,

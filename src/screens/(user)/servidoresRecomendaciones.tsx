@@ -28,9 +28,16 @@ export default function ServidoresRecomendaciones() {
   };
 
   const handleSelectServer = (serverId: string) => {
-    // Aquí podrías implementar la lógica para seleccionar el servidor
-    console.log("Servidor seleccionado:", serverId);
-    // Navegar a la página de confirmación o dashboard
+    // Encontrar el servidor seleccionado
+    const selectedServer = recommendedServers.find(
+      (server) => server.id === serverId
+    );
+    if (selectedServer) {
+      // Guardar el servidor seleccionado en el store
+      useServersStore.getState().selectServer(selectedServer);
+      console.log("Servidor seleccionado:", selectedServer.name);
+    }
+    // Navegar al dashboard
     navigate(paths.user.dashboard);
   };
 

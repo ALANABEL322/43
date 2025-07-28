@@ -23,6 +23,8 @@ export const paths = {
     perfil: "/user/perfil",
     panelDeAlertas: "/user/panel-de-alertas",
     dashboard: "/user/dashboard",
+    rendimiento: "/user/rendimiento",
+    configuracion: "/user/configuracion",
     alertas: "/user/alertas",
     support: "/user/support",
   },
