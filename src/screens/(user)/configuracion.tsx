@@ -52,7 +52,6 @@ export default function Configuracion() {
 
   const [isConfiguring, setIsConfiguring] = useState(false);
 
-  // Inicializar configuración con valores del servidor seleccionado
   useState(() => {
     if (selectedServer) {
       setConfig({
@@ -75,10 +74,8 @@ export default function Configuracion() {
   const handleConfigure = async () => {
     setIsConfiguring(true);
 
-    // Simular proceso de configuración
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
-    // Actualizar métricas del servidor con nueva configuración
     if (selectedServer) {
       updateServerMetrics({
         storage: {

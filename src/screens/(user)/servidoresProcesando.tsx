@@ -72,7 +72,7 @@ export default function ServidoresProcesando() {
 
   useEffect(() => {
     const totalSteps = processingSteps.length;
-    const stepDuration = 10000 / totalSteps; // 10 segundos total
+    const stepDuration = 10000 / totalSteps;
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {

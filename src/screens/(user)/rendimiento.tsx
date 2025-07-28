@@ -48,7 +48,6 @@ export default function Rendimiento() {
   const navigate = useNavigate();
   const {
     selectedServer,
-    updateServerMetrics,
     getServerEvents,
     deleteServerEvent,
   } = useServersStore();
@@ -70,10 +69,8 @@ export default function Rendimiento() {
     eventDescription: "",
   });
 
-  // Obtener eventos dinámicos del store
   const allEvents = getServerEvents();
 
-  // Filtrar eventos según el filtro seleccionado
   const filteredEvents =
     eventFilter === "all"
       ? allEvents
@@ -85,7 +82,6 @@ export default function Rendimiento() {
       return;
     }
 
-    // Simular datos de rendimiento en tiempo real
     const interval = setInterval(() => {
       setPerformanceData({
         uptime: Math.floor(Math.random() * 100) + 90,

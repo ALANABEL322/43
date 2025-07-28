@@ -11,7 +11,6 @@ export default function ServidoresRecomendaciones() {
   const { userRequirements, getRecommendedServers, specifications } =
     useServersStore();
 
-  // Si no hay requisitos del usuario, redirigir a la página de configuración
   if (!userRequirements) {
     navigate(paths.user.servidores);
     return null;
@@ -28,16 +27,14 @@ export default function ServidoresRecomendaciones() {
   };
 
   const handleSelectServer = (serverId: string) => {
-    // Encontrar el servidor seleccionado
     const selectedServer = recommendedServers.find(
       (server) => server.id === serverId
     );
     if (selectedServer) {
-      // Guardar el servidor seleccionado en el store
       useServersStore.getState().selectServer(selectedServer);
       console.log("Servidor seleccionado:", selectedServer.name);
     }
-    // Navegar al dashboard
+
     navigate(paths.user.dashboard);
   };
 

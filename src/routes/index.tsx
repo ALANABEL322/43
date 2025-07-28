@@ -4,16 +4,13 @@ import { paths } from './paths'
 
 export default function Router() {
   return useRoutes([
-    // Public routes (login, register)
+   
     ...publicRoutes,
 
-    // Admin routes
     ...adminRoutes,
 
-    // User routes
     ...userRoutes,
 
-    // Default redirect
     {
       path: '*',
       element: <Navigate to={paths.root} replace />
