@@ -50,7 +50,6 @@ interface SupportStore {
   predefinedAnswers: PredefinedAnswer[];
   predefinedQuestions: PredefinedQuestion[];
 
-  // Ticket management
   addTicket: (
     ticket: Omit<Ticket, "id" | "status" | "createdAt" | "updatedAt">
   ) => void;
@@ -65,12 +64,10 @@ interface SupportStore {
   deleteTicket: (ticketId: string) => void;
   clearClosedTickets: () => void;
 
-  // Predefined answers management
   addPredefinedAnswer: (question: string, answer: string) => void;
   deletePredefinedAnswer: (id: string) => void;
   getPredefinedAnswers: () => PredefinedAnswer[];
 
-  // Automatic responses
   sendAutomaticResponse: (ticketId: string, predefinedAnswerId: string) => void;
   sendAutomaticQuestion: (
     predefinedQuestion: PredefinedAnswer,
@@ -78,10 +75,9 @@ interface SupportStore {
     serverName: string
   ) => void;
 
-  // Predefined questions management
   getPredefinedQuestions: () => PredefinedQuestion[];
 
-  // Getters
+
   getTicketsByEmail: (email: string) => Ticket[];
   getOpenTickets: () => Ticket[];
 }

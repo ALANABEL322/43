@@ -25,7 +25,6 @@ import {
   YAxis,
 } from "recharts";
 
-// Datos para las métricas
 const cpuData = [
   { time: "00:00", usage: 32 },
   { time: "04:00", usage: 45 },

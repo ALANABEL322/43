@@ -1,11 +1,9 @@
 export const paths = {
-  // Auth routes
   auth: {
     root: "/auth",
     login: "/auth/login",
     register: "/auth/register",
   },
-  // Admin routes
   admin: {
     root: "/admin",
     dashboard: "/admin/dashboard",
@@ -13,7 +11,6 @@ export const paths = {
     config: "/admin/config",
     support: "/admin/support",
   },
-  // User routes
   user: {
     root: "/user",
     landingPage: "/user",
@@ -29,6 +26,5 @@ export const paths = {
     alertas: "/user/alertas",
     support: "/user/support",
   },
-  // Root route
   root: "/",
 } as const;

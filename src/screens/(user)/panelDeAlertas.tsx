@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,7 +21,6 @@ import {
   Eye,
   EyeOff,
   Trash2,
-  Filter,
   Activity,
   DollarSign,
   Clock,
@@ -65,19 +63,15 @@ export default function PanelDeAlertas() {
     alertTitle: "",
   });
 
-  // Generar alertas mock al cargar si no hay ninguna
   useEffect(() => {
     if (alerts.length === 0) {
-      // Resetear completamente el store antes de generar nuevas alertas
       resetStore();
-      // Pequeño delay para asegurar que el reset se complete
       setTimeout(() => {
         generateMockAlerts();
       }, 100);
     }
   }, [alerts.length, generateMockAlerts, resetStore]);
 
-  // Actualizar métricas en tiempo real
   useEffect(() => {
     const interval = setInterval(() => {
       if (selectedServer) {

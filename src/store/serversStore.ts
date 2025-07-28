@@ -625,14 +625,14 @@ export const useServersStore = create<ServersState>()(
             id: `event-${Date.now()}-2`,
             type: "update",
             description: "Actualización de seguridad aplicada",
-            timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hora atrás
+            timestamp: new Date(Date.now() - 3600000).toISOString(),
             status: "success",
           },
           {
             id: `event-${Date.now()}-3`,
             type: "maintenance",
             description: "Mantenimiento preventivo realizado",
-            timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 horas atrás
+            timestamp: new Date(Date.now() - 7200000).toISOString(),
             status: "success",
           },
         ];
@@ -643,7 +643,7 @@ export const useServersStore = create<ServersState>()(
             metrics: get().generateMockMetrics(server.id),
             isActive: true,
             deploymentDate: new Date().toISOString(),
-            events: initialEvents, // Asegurar que sea un array
+            events: initialEvents,
           },
         });
       },
@@ -681,7 +681,6 @@ export const useServersStore = create<ServersState>()(
           };
         }
 
-        // Generar métricas basadas en el tipo de servidor
         let cpuBase, memoryBase, storageBase, networkBase;
 
         switch (serverId) {
@@ -778,7 +777,6 @@ export const useServersStore = create<ServersState>()(
       addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => {
         const currentState = get();
         if (currentState.selectedServer) {
-          // Asegurar que events sea un array
           const currentEvents = Array.isArray(
             currentState.selectedServer.events
           )
@@ -818,7 +816,7 @@ export const useServersStore = create<ServersState>()(
           set({
             selectedServer: {
               ...currentState.selectedServer,
-              events: [], // Resetear los eventos
+              events: [],
             },
           });
         }
