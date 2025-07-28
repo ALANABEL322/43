@@ -18,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export default function Config() {
   const [diskSize, setDiskSize] = useState<string>("");
@@ -110,19 +111,14 @@ export default function Config() {
 
           {/* Disk Size */}
           <div className="space-y-2">
-            <label
-              htmlFor="disk-size"
-              className="text-sm font-medium text-gray-700"
-            >
-              Tamaño del disco
-            </label>
+            <Label htmlFor="disk-size">Tamaño del disco</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="disk-size"
                 value={diskSize}
                 onChange={(e) => setDiskSize(e.target.value)}
                 className="flex-1"
-                placeholder="Input"
+                placeholder="Entrada"
               />
               <Button
                 onClick={() => handleResize("disk")}
@@ -144,19 +140,14 @@ export default function Config() {
 
           {/* Memory */}
           <div className="space-y-2">
-            <label
-              htmlFor="memory"
-              className="text-sm font-medium text-gray-700"
-            >
-              Memoria
-            </label>
+            <Label htmlFor="memory">Memoria</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="memory"
                 value={memory}
                 onChange={(e) => setMemory(e.target.value)}
                 className="flex-1"
-                placeholder="Input"
+                placeholder="Entrada"
               />
               <Button
                 onClick={() => handleResize("memory")}
@@ -178,19 +169,14 @@ export default function Config() {
 
           {/* Storage */}
           <div className="space-y-2">
-            <label
-              htmlFor="storage"
-               className="text-sm font-medium text-gray-700"
-            >
-              Almacenamiento
-            </label>
+            <Label htmlFor="storage">Almacenamiento</Label>
             <div className="flex items-center gap-2">
               <Input
                 id="storage"
                 value={storage}
                 onChange={(e) => setStorage(e.target.value)}
                 className="flex-1"
-                placeholder="Input"
+                placeholder="Entrada"
               />
               <Button
                 onClick={() => handleResize("storage")}

@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -12,27 +14,22 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertTriangle,
   Bell,
   CheckCircle,
-  Clock,
-  DollarSign,
-  Info,
-  Settings,
-  TrendingUp,
-  X,
-  Zap,
-  Activity,
-  HardDrive,
-  MemoryStick,
-  Cpu,
-  Network,
-  Trash2,
   Eye,
   EyeOff,
+  Trash2,
+  Filter,
+  Activity,
+  DollarSign,
+  Clock,
+  TrendingUp,
+  Info,
+  Settings,
+  Zap,
 } from "lucide-react";
 import { useAlertsStore } from "@/store/alertsStore";
 import { useServersStore } from "@/store/serversStore";
@@ -43,11 +40,9 @@ export default function PanelDeAlertas() {
     alerts,
     alertSettings,
     metrics,
-    markAsRead,
     markAsResolved,
     deleteAlert,
     updateAlertSettings,
-    clearAllAlerts,
     generateMockAlerts,
     updateMetrics,
     toggleRead,
@@ -60,6 +55,15 @@ export default function PanelDeAlertas() {
     "all" | "critical" | "warning" | "info" | "success"
   >("all");
   const [showResolved, setShowResolved] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    isOpen: boolean;
+    alertId: string | null;
+    alertTitle: string;
+  }>({
+    isOpen: false,
+    alertId: null,
+    alertTitle: "",
+  });
 
   // Generar alertas mock al cargar si no hay ninguna
   useEffect(() => {
@@ -88,6 +92,28 @@ export default function PanelDeAlertas() {
 
     return () => clearInterval(interval);
   }, [selectedServer, updateMetrics]);
+
+  const handleDeleteAlert = (alertId: string, alertTitle: string) => {
+    setConfirmDelete({
+      isOpen: true,
+      alertId,
+      alertTitle,
+    });
+  };
+
+  const confirmDeleteAlert = () => {
+    if (confirmDelete.alertId) {
+      deleteAlert(confirmDelete.alertId);
+    }
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDelete({
+      isOpen: false,
+      alertId: null,
+      alertTitle: "",
+    });
+  };
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -349,7 +375,7 @@ export default function PanelDeAlertas() {
                     <Button
                       size="sm"
                       variant="ghost"
-                      onClick={() => deleteAlert(alert.id)}
+                      onClick={() => handleDeleteAlert(alert.id, alert.title)}
                       title="Eliminar alerta"
                       className="hover:bg-red-100 hover:text-red-600"
                     >
@@ -476,6 +502,16 @@ export default function PanelDeAlertas() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        isOpen={confirmDelete.isOpen}
+        onClose={closeConfirmDialog}
+        onConfirm={confirmDeleteAlert}
+        title="Confirmar Eliminación de Alerta"
+        description={`¿Estás seguro de que quieres eliminar la alerta "${confirmDelete.alertTitle}"? Esta acción no se puede deshacer.`}
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+      />
     </div>
   );
 }

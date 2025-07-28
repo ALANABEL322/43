@@ -1,22 +1,23 @@
-import type { ReactNode } from "react";
+import { Outlet } from "react-router-dom";
 import imgAuth from "@/assets/autImag.png";
-interface AuthLayoutProps {
-  children: ReactNode;
-}
 
-export default function AuthLayout({ children }: AuthLayoutProps) {
+export default function AuthLayout() {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <div className="w-full md:w-1/2 flex items-center justify-center bg-[#FFFFFF] p-6 md:p-10">
-        <div className="w-full max-w-md">{children}</div>
+      <div className="flex flex-1 items-center justify-center bg-white p-6 md:p-4">
+        <div className="w-full max-w-md">
+          <Outlet />
+        </div>
       </div>
 
-      <div className="w-full md:w-1/2 flex bg-white">
-        <img
-          src={imgAuth}
-          alt="Collaboration illustration"
-          className="w-full h-[58rem]  object-cover"
-        />
+      <div className="flex flex-1 items-center justify-center bg-[#ffffff] p-6 md:p-4">
+        <div className="max-w-md">
+          <img
+            src={imgAuth}
+            alt="Ilustración de colaboración"
+            className="h-auto w-full rounded-lg shadow-lg border-2 border-gray-200 p-2 bg-white"
+          />
+        </div>
       </div>
     </div>
   );

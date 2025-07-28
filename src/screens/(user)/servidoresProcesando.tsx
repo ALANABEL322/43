@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Brain,
   Zap,
-  Shield,
   Server,
   Cpu,
   Database,
@@ -210,7 +209,7 @@ export default function ServidoresProcesando() {
             ></div>
           </div>
 
-          {/* Loading Dots */}
+          {/* Puntos de Carga */}
           {!isComplete && (
             <div className="flex justify-center space-x-2 mt-6">
               <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>

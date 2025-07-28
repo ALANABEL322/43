@@ -67,7 +67,7 @@ export default function LoginForm() {
             className="flex items-center gap-2 bg-blue-50 hover:bg-blue-100 border-blue-200"
           >
             <Crown className="h-4 w-4 text-blue-600" />
-            <span className="text-sm">Admin</span>
+            <span className="text-sm">Administrador</span>
           </Button>
           <Button
             type="button"
