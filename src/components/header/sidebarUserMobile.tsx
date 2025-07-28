@@ -40,7 +40,7 @@ export default function SidebarUserMobile({
     },
     {
       icon: AlertTriangle,
-      path: paths.user.alertas,
+      path: paths.user.panelDeAlertas,
       tooltip: "Panel de Alertas",
       color: "#26C6DA",
     },
