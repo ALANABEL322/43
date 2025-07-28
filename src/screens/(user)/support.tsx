@@ -92,8 +92,8 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
       !formData.urgencyLevel
     ) {
       toast({
-        title: "Missing information",
-        description: "Please fill in all required fields.",
+        title: "Información faltante",
+        description: "Por favor, completa todos los campos requeridos.",
         variant: "destructive",
       });
       return;
@@ -102,8 +102,9 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.email)) {
       toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address.",
+        title: "Email inválido",
+        description:
+          "Por favor, ingresa una dirección de correo electrónico válida.",
         variant: "destructive",
       });
       return;
@@ -123,8 +124,8 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
       });
 
       toast({
-        title: "Support ticket submitted",
-        description: "We'll get back to you as soon as possible.",
+        title: "Ticket de soporte enviado",
+        description: "Te responderemos lo antes posible.",
       });
 
       setFormData({
@@ -138,8 +139,7 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
     } catch (error) {
       toast({
         title: "Error",
-        description:
-          "There was a problem submitting your ticket. Please try again.",
+        description: "Error al crear el ticket. Inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -178,15 +178,15 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel onClick={onCancel}>
+                <Button variant="outline" onClick={onCancel}>
                   Cancelar
-                </AlertDialogCancel>
-                <AlertDialogAction
+                </Button>
+                <Button
                   onClick={onConfirm}
-                  className="bg-red-500 hover:bg-red-600"
+                  className="bg-red-600 hover:bg-red-700"
                 >
                   Eliminar
-                </AlertDialogAction>
+                </Button>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -227,9 +227,11 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                 <Label htmlFor="serverName">Server Name (or ID)</Label>
                 <Input
                   id="serverName"
-                  placeholder="Enter server name or ID"
+                  placeholder="Ingresa el nombre del servidor o ID"
                   value={formData.serverName}
-                  onChange={(e) => handleChange("serverName", e.target.value)}
+                  onChange={(e) =>
+                    setFormData({ ...formData, serverName: e.target.value })
+                  }
                   disabled={isSubmitting}
                   required
                 />
@@ -239,9 +241,11 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="your.email@example.com"
+                  placeholder="tu.correo@ejemplo.com"
                   value={formData.email}
-                  onChange={(e) => handleChange("email", e.target.value)}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
                   disabled={isSubmitting}
                   required
                 />
@@ -261,15 +265,11 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
-                      <SelectItem value="login">Login</SelectItem>
-                      <SelectItem value="configuration">
-                        Configuration
-                      </SelectItem>
-                      <SelectItem value="deployment">Deployment</SelectItem>
-                      <SelectItem value="monitoring">Monitoring</SelectItem>
-                      <SelectItem value="optimization">Optimization</SelectItem>
-                      <SelectItem value="security">Security</SelectItem>
-                      <SelectItem value="other">Other</SelectItem>
+                      <SelectItem value="login">Inicio de Sesión</SelectItem>
+                      <SelectItem value="registration">Registro</SelectItem>
+                      <SelectItem value="billing">Facturación</SelectItem>
+                      <SelectItem value="technical">Técnico</SelectItem>
+                      <SelectItem value="general">General</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -333,8 +333,8 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
               <Label htmlFor="details">Details</Label>
               <Textarea
                 id="details"
-                placeholder="Describe the issue in detail..."
-                className="min-h-[120px]"
+                placeholder="Describe el problema en detalle..."
+                className="min-h-[100px]"
                 value={formData.details}
                 onChange={(e) => handleChange("details", e.target.value)}
                 disabled={isSubmitting}
@@ -358,7 +358,7 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                 });
               }}
             >
-              Cancel
+              Cancelar
             </Button>
             <Button
               type="submit"
@@ -368,10 +368,10 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Submitting...
+                  Enviando...
                 </>
               ) : (
-                "Submit"
+                "Enviar"
               )}
             </Button>
           </CardFooter>
@@ -382,7 +382,7 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
       <Card className={cn("w-full max-w-2xl", className)}>
         <CardHeader>
           <CardTitle className="text-xl font-semibold">
-            Support History
+            Historial de Soporte
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -397,10 +397,10 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                           Server: {ticket.serverName}
                         </h3>
                         <p className="text-sm text-gray-500">
-                          Email: {ticket.email}
+                          Correo: {ticket.email}
                         </p>
                         <p className="text-sm text-gray-500">
-                          Created: {format(new Date(ticket.createdAt), "PPP")}
+                          Creado: {format(new Date(ticket.createdAt), "PPP")}
                         </p>
                       </div>
                       <div className="flex flex-col items-end gap-2">
@@ -421,7 +421,7 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                                 : "bg-gray-100 text-gray-800"
                             )}
                           >
-                            {ticket.status === "open" ? "Active" : "Resolved"}
+                            {ticket.status === "open" ? "Activo" : "Resuelto"}
                           </span>
                           <span
                             className={cn(
@@ -444,15 +444,15 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                     <div className="mt-4 space-y-2">
                       <div className="bg-gray-50 p-3 rounded-md">
                         <p className="text-sm font-medium text-gray-700">
-                          Issue:
+                          Problema:
                         </p>
                         <p className="text-sm text-gray-600">
                           {ticket.details}
                         </p>
                         <div className="mt-2 text-xs text-gray-500">
-                          <p>Type: {ticket.problemType}</p>
+                          <p>Tipo: {ticket.problemType}</p>
                           <p>
-                            Date: {format(new Date(ticket.problemDate), "PPP")}
+                            Fecha: {format(new Date(ticket.problemDate), "PPP")}
                           </p>
                         </div>
                       </div>
@@ -461,7 +461,7 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                         <div className="bg-emerald-50 p-3 rounded-md">
                           <div className="flex items-start justify-between">
                             <p className="text-sm font-medium text-emerald-900">
-                              Support Response:
+                              Respuesta de Soporte:
                             </p>
                             <p className="text-xs text-emerald-700">
                               {format(new Date(ticket.updatedAt), "PPP")}
@@ -472,7 +472,7 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
                           </p>
                           {ticket.adminName && (
                             <p className="text-xs text-emerald-600 mt-2">
-                              Responded by: {ticket.adminName}
+                              Respondido por: {ticket.adminName}
                             </p>
                           )}
                         </div>
@@ -484,9 +484,9 @@ export function UserSupportPage({ className }: SupportTicketFormProps) {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              <p>No support tickets yet.</p>
+              <p>Aún no hay tickets de soporte.</p>
               <p className="text-sm mt-1">
-                Submit a ticket above or use one of the predefined questions.
+                Envía un ticket arriba o usa una de las preguntas predefinidas.
               </p>
             </div>
           )}

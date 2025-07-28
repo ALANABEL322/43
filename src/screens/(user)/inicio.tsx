@@ -13,9 +13,6 @@ import imgServer from "@/assets/servidorIMG.png";
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
-  ChartLegend,
-  ChartLegendContent,
 } from "@/components/ui/chart";
 import {
   Area,
@@ -24,7 +21,6 @@ import {
   BarChart,
   Line,
   LineChart,
-  ResponsiveContainer,
   XAxis,
   YAxis,
 } from "recharts";
@@ -423,8 +419,8 @@ export function Inicio() {
               <CardContent className="p-0">
                 <div className="relative h-40 overflow-hidden">
                   <img
-                    src={imgServer}
-                    alt="Server rack"
+                    src={server.image.imgServer}
+                    alt="Rack de servidores"
                     className="w-full h-full object-cover"
                   />
                 </div>

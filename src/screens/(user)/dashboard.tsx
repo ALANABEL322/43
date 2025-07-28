@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Server,
   Cpu,
@@ -19,6 +20,10 @@ import {
   AlertTriangle,
   TrendingUp,
   Settings,
+  Power,
+  PowerOff,
+  RotateCcw,
+  Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useServersStore } from "@/store/serversStore";
@@ -28,11 +33,85 @@ import server1 from "@/assets/server-1024x506.jpg";
 
 export function UserDashboard() {
   const navigate = useNavigate();
-  const { selectedServer, updateServerMetrics } = useServersStore();
+  const {
+    selectedServer,
+    updateServerMetrics,
+    addServerEvent,
+    deleteServerEvent,
+  } = useServersStore();
+  const [isServerRunning, setIsServerRunning] = useState(true);
+  const [isRestarting, setIsRestarting] = useState(false);
+  const [isOperationInProgress, setIsOperationInProgress] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    isOpen: boolean;
+    eventId: string | null;
+    eventDescription: string;
+  }>({
+    isOpen: false,
+    eventId: null,
+    eventDescription: "",
+  });
 
-  // Actualizar métricas cada 5 segundos si hay un servidor seleccionado
+  // Obtener eventos recientes (últimos 5)
+  const recentEvents = selectedServer
+    ? selectedServer.events.slice(-5).reverse()
+    : [];
+
+  const handleDeleteEvent = (eventId: string, eventDescription: string) => {
+    setConfirmDelete({
+      isOpen: true,
+      eventId,
+      eventDescription,
+    });
+  };
+
+  const confirmDeleteEvent = () => {
+    if (confirmDelete.eventId) {
+      deleteServerEvent(confirmDelete.eventId);
+    }
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDelete({
+      isOpen: false,
+      eventId: null,
+      eventDescription: "",
+    });
+  };
+
+  const getEventIcon = (type: string) => {
+    switch (type) {
+      case "update":
+        return <Settings className="h-4 w-4" />;
+      case "restart":
+        return <RotateCcw className="h-4 w-4" />;
+      case "start":
+        return <Power className="h-4 w-4" />;
+      case "stop":
+        return <PowerOff className="h-4 w-4" />;
+      case "maintenance":
+        return <Activity className="h-4 w-4" />;
+      default:
+        return <Activity className="h-4 w-4" />;
+    }
+  };
+
+  const getEventStatusColor = (status: string) => {
+    switch (status) {
+      case "success":
+        return "bg-green-100 text-green-800";
+      case "warning":
+        return "bg-yellow-100 text-yellow-800";
+      case "error":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-800";
+    }
+  };
+
+  // Actualizar métricas cada 5 segundos si hay un servidor seleccionado y está corriendo
   useEffect(() => {
-    if (!selectedServer) return;
+    if (!selectedServer || !isServerRunning) return;
 
     const interval = setInterval(() => {
       updateServerMetrics({
@@ -77,7 +156,119 @@ export function UserDashboard() {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [selectedServer, updateServerMetrics]);
+  }, [selectedServer, updateServerMetrics, isServerRunning]);
+
+  const handleStopServer = () => {
+    if (!selectedServer || isOperationInProgress) return;
+    setIsOperationInProgress(true);
+    setIsServerRunning(false);
+    updateServerMetrics({
+      status: "offline",
+      cpu: { current: 0, average: 0, critical: 0, history: [] },
+      memory: {
+        current: 0,
+        average: 0,
+        total: selectedServer.metrics.memory.total,
+        history: [],
+      },
+      network: {
+        current: 0,
+        total: selectedServer.metrics.network.total,
+        bandwidth: 0,
+        history: [],
+      },
+      storage: {
+        used: 0,
+        total: selectedServer.metrics.storage.total,
+        available: 0,
+        history: [],
+      },
+    });
+
+    // Agregar evento de detención con manejo de errores
+    try {
+      addServerEvent({
+        type: "stop",
+        description: "Servidor detenido manualmente",
+        status: "success",
+      });
+    } catch (error) {
+      console.error("Error al agregar evento:", error);
+    }
+
+    // Habilitar botones después de un breve delay
+    setTimeout(() => {
+      setIsOperationInProgress(false);
+    }, 1000);
+  };
+
+  const handleStartServer = () => {
+    if (!selectedServer || isOperationInProgress) return;
+    setIsOperationInProgress(true);
+    setIsServerRunning(true);
+    updateServerMetrics({
+      status: "online",
+    });
+
+    // Agregar evento de inicio con manejo de errores
+    try {
+      addServerEvent({
+        type: "start",
+        description: "Servidor iniciado manualmente",
+        status: "success",
+      });
+    } catch (error) {
+      console.error("Error al agregar evento:", error);
+    }
+
+    // Habilitar botones después de un breve delay
+    setTimeout(() => {
+      setIsOperationInProgress(false);
+    }, 1000);
+  };
+
+  const handleRestartServer = async () => {
+    if (!selectedServer || isOperationInProgress) return;
+    setIsOperationInProgress(true);
+    setIsRestarting(true);
+    setIsServerRunning(false);
+
+    // Agregar evento de reinicio con manejo de errores
+    try {
+      addServerEvent({
+        type: "restart",
+        description: "Reinicio del servidor iniciado",
+        status: "success",
+      });
+    } catch (error) {
+      console.error("Error al agregar evento:", error);
+    }
+
+    // Simular proceso de reinicio
+    setTimeout(() => {
+      setIsServerRunning(true);
+      setIsRestarting(false);
+      updateServerMetrics({
+        status: "online",
+      });
+
+      // Agregar evento de reinicio completado con manejo de errores
+      try {
+        addServerEvent({
+          type: "restart",
+          description: "Reinicio del servidor completado exitosamente",
+          status: "success",
+        });
+      } catch (error) {
+        console.error("Error al agregar evento:", error);
+      }
+
+      // Habilitar botones después del reinicio
+      setTimeout(() => {
+        setIsOperationInProgress(false);
+      }, 500);
+    }, 3000); // 3 segundos de reinicio
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -142,13 +333,60 @@ export function UserDashboard() {
                 >
                   {getStatusText(selectedServer.metrics.status)}
                 </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => navigate(paths.user.servidores)}
-                >
-                  Cambiar Servidor
-                </Button>
+                {isOperationInProgress && (
+                  <Badge variant="secondary" className="text-xs">
+                    Operación en progreso...
+                  </Badge>
+                )}
+                <div className="flex gap-2">
+                  {isServerRunning ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleStopServer}
+                      disabled={isRestarting || isOperationInProgress}
+                      className="text-red-600 border-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <PowerOff className="h-4 w-4 mr-1" />
+                      Detener
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleStartServer}
+                      disabled={isRestarting || isOperationInProgress}
+                      className="text-green-600 border-green-600 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <Power className="h-4 w-4 mr-1" />
+                      Iniciar
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleRestartServer}
+                    disabled={isRestarting || isOperationInProgress}
+                    className="text-orange-600 border-orange-600 hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <RotateCcw
+                      className={cn(
+                        "h-4 w-4 mr-1",
+                        isRestarting && "animate-spin"
+                      )}
+                    />
+                    {isRestarting ? "Reiniciando..." : "Reiniciar"}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => navigate(paths.user.servidores)}
+                    disabled={isRestarting || isOperationInProgress}
+                    className="disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Cambiar Servidor
+                  </Button>
+                </div>
               </div>
             </div>
           </CardHeader>
@@ -521,7 +759,7 @@ export function UserDashboard() {
               <div className="relative h-64 overflow-hidden">
                 <img
                   src={server1}
-                  alt="Server rack"
+                  alt="Rack de servidores"
                   className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-4 left-4 text-white bg-black/50 px-3 py-2 rounded-lg">
@@ -589,6 +827,74 @@ export function UserDashboard() {
           </Card>
         </div>
       )}
+
+      {/* Eventos Recientes */}
+      {selectedServer && recentEvents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="h-5 w-5" />
+                Eventos Recientes
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate(paths.user.rendimiento)}
+                className="text-blue-600 hover:text-blue-700"
+              >
+                Ver todos →
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {recentEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-center justify-between gap-4 p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      {getEventIcon(event.type)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">{event.description}</p>
+                      <p className="text-xs text-gray-600">
+                        {new Date(event.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getEventStatusColor(event.status)}>
+                      {event.status === "success" ? "Exitoso" : event.status}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        handleDeleteEvent(event.id, event.description)
+                      }
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title="Eliminar evento"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      <ConfirmDialog
+        isOpen={confirmDelete.isOpen}
+        onClose={closeConfirmDialog}
+        onConfirm={confirmDeleteEvent}
+        title="Confirmar eliminación"
+        description={`¿Estás seguro de que quieres eliminar el evento "${confirmDelete.eventDescription}"? Esta acción no se puede deshacer.`}
+      />
     </div>
   );
 }

@@ -225,8 +225,7 @@ export default function AdminSupportPage() {
                 </div>
 
                 <Textarea
-                  placeholder="Write a response..."
-                  className="min-h-[100px]"
+                  placeholder="Escribe una respuesta..."
                   value={responses[ticket.id] || ""}
                   onChange={(e) =>
                     setResponses((prev) => ({
@@ -234,6 +233,7 @@ export default function AdminSupportPage() {
                       [ticket.id]: e.target.value,
                     }))
                   }
+                  className="min-h-[100px]"
                 />
 
                 <div className="flex justify-end space-x-2">

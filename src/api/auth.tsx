@@ -19,13 +19,13 @@ export interface APIUser {
 // Usuarios mockeados predefinidos para fácil acceso
 export const MOCK_USERS = {
   admin: {
-    email: "admin@test.com",
+    email: "admin@admin.com",
     password: "admin123",
     username: "Administrador",
     role: "admin" as UserRole,
   },
   user: {
-    email: "user@test.com",
+    email: "user@user.com",
     password: "user123",
     username: "Usuario",
     role: "user" as UserRole,

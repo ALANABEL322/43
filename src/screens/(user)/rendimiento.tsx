@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Server,
   Cpu,
@@ -19,6 +20,8 @@ import {
   CheckCircle,
   XCircle,
   Info,
+  Trash2,
+  Filter,
 } from "lucide-react";
 import { useServersStore } from "@/store/serversStore";
 import { useNavigate } from "react-router-dom";
@@ -33,9 +36,22 @@ interface ServerEvent {
   status: "success" | "warning" | "error";
 }
 
+type EventFilter =
+  | "all"
+  | "restart"
+  | "stop"
+  | "start"
+  | "update"
+  | "maintenance";
+
 export default function Rendimiento() {
   const navigate = useNavigate();
-  const { selectedServer, updateServerMetrics } = useServersStore();
+  const {
+    selectedServer,
+    updateServerMetrics,
+    getServerEvents,
+    deleteServerEvent,
+  } = useServersStore();
   const [performanceData, setPerformanceData] = useState({
     uptime: 0,
     responseTime: 0,
@@ -43,37 +59,25 @@ export default function Rendimiento() {
     errorRate: 0,
     activeConnections: 0,
   });
+  const [eventFilter, setEventFilter] = useState<EventFilter>("all");
+  const [confirmDelete, setConfirmDelete] = useState<{
+    isOpen: boolean;
+    eventId: string | null;
+    eventDescription: string;
+  }>({
+    isOpen: false,
+    eventId: null,
+    eventDescription: "",
+  });
 
-  const [events, setEvents] = useState<ServerEvent[]>([
-    {
-      id: "1",
-      type: "update",
-      description: "Actualización de seguridad aplicada",
-      timestamp: "2024-01-15T10:30:00Z",
-      status: "success",
-    },
-    {
-      id: "2",
-      type: "restart",
-      description: "Reinicio programado completado",
-      timestamp: "2024-01-14T02:00:00Z",
-      status: "success",
-    },
-    {
-      id: "3",
-      type: "maintenance",
-      description: "Mantenimiento preventivo realizado",
-      timestamp: "2024-01-13T15:45:00Z",
-      status: "success",
-    },
-    {
-      id: "4",
-      type: "start",
-      description: "Servidor iniciado después de mantenimiento",
-      timestamp: "2024-01-13T16:30:00Z",
-      status: "success",
-    },
-  ]);
+  // Obtener eventos dinámicos del store
+  const allEvents = getServerEvents();
+
+  // Filtrar eventos según el filtro seleccionado
+  const filteredEvents =
+    eventFilter === "all"
+      ? allEvents
+      : allEvents.filter((event) => event.type === eventFilter);
 
   useEffect(() => {
     if (!selectedServer) {
@@ -94,6 +98,28 @@ export default function Rendimiento() {
 
     return () => clearInterval(interval);
   }, [selectedServer, navigate]);
+
+  const handleDeleteEvent = (eventId: string, eventDescription: string) => {
+    setConfirmDelete({
+      isOpen: true,
+      eventId,
+      eventDescription,
+    });
+  };
+
+  const confirmDeleteEvent = () => {
+    if (confirmDelete.eventId) {
+      deleteServerEvent(confirmDelete.eventId);
+    }
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDelete({
+      isOpen: false,
+      eventId: null,
+      eventDescription: "",
+    });
+  };
 
   const getEventIcon = (type: string) => {
     switch (type) {
@@ -123,6 +149,15 @@ export default function Rendimiento() {
       default:
         return "bg-gray-100 text-gray-800";
     }
+  };
+
+  const getFilterButtonClass = (filter: EventFilter) => {
+    return cn(
+      "px-3 py-1 text-sm rounded-md transition-colors",
+      eventFilter === filter
+        ? "bg-blue-600 text-white"
+        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+    );
   };
 
   const formatUptime = (seconds: number) => {
@@ -412,33 +447,124 @@ export default function Rendimiento() {
       {/* Eventos */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5" />
-            Eventos del Sistema
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              Eventos del Sistema
+            </CardTitle>
+            <div className="flex items-center gap-2">
+              <Badge variant="secondary">{filteredEvents.length} eventos</Badge>
+              <Badge variant="outline">Total: {allEvents.length}</Badge>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
+          <div className="flex items-center gap-2 mb-4 flex-wrap">
+            <span className="text-sm font-medium text-gray-700 mr-2">
+              Filtrar por:
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEventFilter("all")}
+              className={getFilterButtonClass("all")}
+            >
+              <Filter className="mr-1 h-4 w-4" /> Todos
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEventFilter("restart")}
+              className={getFilterButtonClass("restart")}
+            >
+              <Zap className="mr-1 h-4 w-4" /> Reinicios
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEventFilter("start")}
+              className={getFilterButtonClass("start")}
+            >
+              <CheckCircle className="mr-1 h-4 w-4" /> Inicios
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEventFilter("stop")}
+              className={getFilterButtonClass("stop")}
+            >
+              <XCircle className="mr-1 h-4 w-4" /> Paradas
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEventFilter("update")}
+              className={getFilterButtonClass("update")}
+            >
+              <Settings className="mr-1 h-4 w-4" /> Actualizaciones
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEventFilter("maintenance")}
+              className={getFilterButtonClass("maintenance")}
+            >
+              <Info className="mr-1 h-4 w-4" /> Mantenimiento
+            </Button>
+          </div>
           <div className="space-y-4">
-            {events.map((event) => (
-              <div
-                key={event.id}
-                className="flex items-center gap-4 p-4 border rounded-lg"
-              >
-                <div className="flex-shrink-0">{getEventIcon(event.type)}</div>
-                <div className="flex-1">
-                  <p className="font-medium">{event.description}</p>
-                  <p className="text-sm text-gray-600">
-                    {new Date(event.timestamp).toLocaleString()}
-                  </p>
-                </div>
-                <Badge className={getEventStatusColor(event.status)}>
-                  {event.status === "success" ? "Exitoso" : event.status}
-                </Badge>
+            {filteredEvents.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">
+                <Activity className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                <p>No hay eventos que coincidan con el filtro seleccionado</p>
               </div>
-            ))}
+            ) : (
+              filteredEvents.map((event) => (
+                <div
+                  key={event.id}
+                  className="flex items-center justify-between gap-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex-shrink-0">
+                      {getEventIcon(event.type)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{event.description}</p>
+                      <p className="text-sm text-gray-600">
+                        {new Date(event.timestamp).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge className={getEventStatusColor(event.status)}>
+                      {event.status === "success" ? "Exitoso" : event.status}
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        handleDeleteEvent(event.id, event.description)
+                      }
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                      title="Eliminar evento"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        isOpen={confirmDelete.isOpen}
+        onClose={closeConfirmDialog}
+        onConfirm={confirmDeleteEvent}
+        title="Confirmar Eliminación"
+        description={`¿Estás seguro de que quieres eliminar el evento "${confirmDelete.eventDescription}"? Esta acción no se puede deshacer.`}
+      />
     </div>
   );
 }

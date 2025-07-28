@@ -34,7 +34,7 @@ export default function Navbar() {
             <img
               src={logo}
               className="h-6 w-8 mr-3 sm:h-14 sm:w-28"
-              alt="Leadty Logo"
+              alt="Logo de Leadty"
             />
           </div>
         </div>
@@ -74,7 +74,7 @@ export default function Navbar() {
                   {user.username}
                 </span>
                 <span className="px-2 py-1 text-xs font-medium bg-gray-100 rounded-full">
-                  {user.role === "admin" ? "Admin" : "Usuario"}
+                  {user.role === "admin" ? "Administrador" : "Usuario"}
                 </span>
               </div>
             </div>
