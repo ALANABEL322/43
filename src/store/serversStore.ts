@@ -29,16 +29,58 @@ export interface UserServerRequirements {
   additionalNotes: string;
 }
 
+export interface ServerMetrics {
+  cpu: {
+    current: number;
+    average: number;
+    critical: number;
+    history: number[];
+  };
+  memory: {
+    current: number;
+    average: number;
+    total: number;
+    history: number[];
+  };
+  network: {
+    current: number;
+    total: number;
+    bandwidth: number;
+    history: number[];
+  };
+  storage: {
+    used: number;
+    total: number;
+    available: number;
+    history: number[];
+  };
+  status: "online" | "offline" | "warning" | "critical";
+  uptime: number;
+  lastUpdate: string;
+}
+
+export interface SelectedServer {
+  server: PredefinedServer;
+  metrics: ServerMetrics;
+  isActive: boolean;
+  deploymentDate: string;
+}
+
 interface ServersState {
   specifications: ServerSpecification[];
   predefinedServers: PredefinedServer[];
   userRequirements: UserServerRequirements | null;
+  selectedServer: SelectedServer | null;
   setUserRequirements: (requirements: UserServerRequirements) => void;
   getRecommendedServers: (
     selectedSpecs: string[],
     selectedSubSpecs: string[]
   ) => PredefinedServer[];
   clearUserRequirements: () => void;
+  selectServer: (server: PredefinedServer) => void;
+  updateServerMetrics: (metrics: Partial<ServerMetrics>) => void;
+  clearSelectedServer: () => void;
+  generateMockMetrics: (serverId: string) => ServerMetrics;
 }
 
 export const useServersStore = create<ServersState>()(
@@ -523,6 +565,7 @@ export const useServersStore = create<ServersState>()(
       ],
 
       userRequirements: null,
+      selectedServer: null,
 
       setUserRequirements: (requirements: UserServerRequirements) => {
         set({ userRequirements: requirements });
@@ -554,6 +597,145 @@ export const useServersStore = create<ServersState>()(
 
       clearUserRequirements: () => {
         set({ userRequirements: null });
+      },
+
+      selectServer: (server: PredefinedServer) => {
+        set({
+          selectedServer: {
+            server,
+            metrics: get().generateMockMetrics(server.id),
+            isActive: true,
+            deploymentDate: new Date().toISOString(),
+          },
+        });
+      },
+
+      updateServerMetrics: (metrics: Partial<ServerMetrics>) => {
+        const currentState = get();
+        if (currentState.selectedServer) {
+          set({
+            selectedServer: {
+              ...currentState.selectedServer,
+              metrics: {
+                ...currentState.selectedServer.metrics,
+                ...metrics,
+              },
+            },
+          });
+        }
+      },
+
+      clearSelectedServer: () => {
+        set({ selectedServer: null });
+      },
+
+      generateMockMetrics: (serverId: string) => {
+        const server = get().predefinedServers.find((s) => s.id === serverId);
+        if (!server) {
+          return {
+            cpu: { current: 0, average: 0, critical: 0, history: [] },
+            memory: { current: 0, average: 0, total: 0, history: [] },
+            network: { current: 0, total: 0, bandwidth: 0, history: [] },
+            storage: { used: 0, total: 0, available: 0, history: [] },
+            status: "offline",
+            uptime: 0,
+            lastUpdate: new Date().toISOString(),
+          };
+        }
+
+        // Generar métricas basadas en el tipo de servidor
+        let cpuBase, memoryBase, storageBase, networkBase;
+
+        switch (serverId) {
+          case "basic-web":
+            cpuBase = { current: 45, average: 35, critical: 5 };
+            memoryBase = { current: 60, average: 50, total: 8 };
+            storageBase = { used: 50, total: 100, available: 50 };
+            networkBase = { current: 40, total: 500, bandwidth: 100 };
+            break;
+          case "business-server":
+            cpuBase = { current: 65, average: 55, critical: 8 };
+            memoryBase = { current: 75, average: 65, total: 16 };
+            storageBase = { used: 300, total: 500, available: 200 };
+            networkBase = { current: 60, total: 800, bandwidth: 250 };
+            break;
+          case "enterprise-server":
+            cpuBase = { current: 80, average: 70, critical: 12 };
+            memoryBase = { current: 85, average: 75, total: 32 };
+            storageBase = { used: 800, total: 1000, available: 200 };
+            networkBase = { current: 75, total: 1200, bandwidth: 500 };
+            break;
+          case "database-server":
+            cpuBase = { current: 70, average: 60, critical: 10 };
+            memoryBase = { current: 90, average: 80, total: 32 };
+            storageBase = { used: 600, total: 1000, available: 400 };
+            networkBase = { current: 55, total: 900, bandwidth: 300 };
+            break;
+          case "storage-server":
+            cpuBase = { current: 30, average: 25, critical: 3 };
+            memoryBase = { current: 40, average: 35, total: 16 };
+            storageBase = { used: 1500, total: 2000, available: 500 };
+            networkBase = { current: 45, total: 600, bandwidth: 150 };
+            break;
+          case "development-server":
+            cpuBase = { current: 55, average: 45, critical: 6 };
+            memoryBase = { current: 70, average: 60, total: 8 };
+            storageBase = { used: 80, total: 100, available: 20 };
+            networkBase = { current: 50, total: 400, bandwidth: 100 };
+            break;
+          default:
+            cpuBase = { current: 50, average: 40, critical: 7 };
+            memoryBase = { current: 65, average: 55, total: 16 };
+            storageBase = { used: 400, total: 500, available: 100 };
+            networkBase = { current: 55, total: 700, bandwidth: 200 };
+        }
+
+        const mockMetrics: ServerMetrics = {
+          cpu: {
+            current: cpuBase.current + Math.floor(Math.random() * 20) - 10,
+            average: cpuBase.average,
+            critical: cpuBase.critical,
+            history: Array.from(
+              { length: 10 },
+              () => cpuBase.average + Math.floor(Math.random() * 30) - 15
+            ),
+          },
+          memory: {
+            current: memoryBase.current + Math.floor(Math.random() * 20) - 10,
+            average: memoryBase.average,
+            total: memoryBase.total,
+            history: Array.from(
+              { length: 10 },
+              () => memoryBase.average + Math.floor(Math.random() * 30) - 15
+            ),
+          },
+          network: {
+            current: networkBase.current + Math.floor(Math.random() * 20) - 10,
+            total: networkBase.total,
+            bandwidth: networkBase.bandwidth,
+            history: Array.from(
+              { length: 10 },
+              () => networkBase.current + Math.floor(Math.random() * 30) - 15
+            ),
+          },
+          storage: {
+            used: storageBase.used + Math.floor(Math.random() * 50) - 25,
+            total: storageBase.total,
+            available:
+              storageBase.available + Math.floor(Math.random() * 50) - 25,
+            history: Array.from(
+              { length: 10 },
+              () =>
+                Math.floor((storageBase.used / storageBase.total) * 100) +
+                Math.floor(Math.random() * 20) -
+                10
+            ),
+          },
+          status: "online",
+          uptime: Math.floor(Math.random() * 10000) + 5000,
+          lastUpdate: new Date().toISOString(),
+        };
+        return mockMetrics;
       },
     }),
     {

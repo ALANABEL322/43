@@ -21,26 +21,55 @@ export default function Servidores() {
   const [expandedSpec, setExpandedSpec] = useState<string | null>(null);
 
   const handleSpecToggle = (specId: string) => {
-    setSelectedSpecs((prev) =>
-      prev.includes(specId)
-        ? prev.filter((id) => id !== specId)
-        : [...prev, specId]
-    );
+    setSelectedSpecs((prev) => {
+      if (prev.includes(specId)) {
+        // Si la categoría está seleccionada, la deseleccionamos
+        return prev.filter((id) => id !== specId);
+      } else {
+        // Si no está seleccionada, la agregamos
+        return [...prev, specId];
+      }
+    });
+
+    // Si se selecciona una categoría completa, deseleccionar todas las subopciones de esa categoría
+    const spec = specifications.find((s) => s.id === specId);
+    if (spec && spec.subOptions) {
+      const subOptionsToRemove = spec.subOptions.map((subOpt) => subOpt.id);
+      setSelectedSubSpecs((prev) => {
+        return prev.filter((id) => !subOptionsToRemove.includes(id));
+      });
+    }
   };
 
   const handleSubOptionToggle = (subSpecId: string, specId: string) => {
     setSelectedSubSpecs((prev) => {
       if (prev.includes(subSpecId)) {
+        // Si ya está seleccionada, la deseleccionamos
         return prev.filter((id) => id !== subSpecId);
       } else {
-        return [...prev, subSpecId];
+        // Si no está seleccionada, deseleccionamos todas las subopciones de esta categoría
+        // y seleccionamos solo la nueva
+        const otherSubSpecsInCategory = prev.filter((id) => {
+          const spec = specifications.find((s) => s.id === specId);
+          return (
+            spec?.subOptions?.some((subOpt) => subOpt.id === id) &&
+            id !== subSpecId
+          );
+        });
+
+        const remainingSubSpecs = prev.filter(
+          (id) => !otherSubSpecsInCategory.includes(id)
+        );
+        return [...remainingSubSpecs, subSpecId];
       }
     });
 
-    // Si se selecciona una sub-opción, también seleccionar la especificación principal
-    if (!selectedSpecs.includes(specId)) {
-      setSelectedSpecs((prev) => [...prev, specId]);
-    }
+    // Si se selecciona una sub-opción, deseleccionar la categoría principal
+    // y seleccionar la especificación principal
+    setSelectedSpecs((prev) => {
+      const newSpecs = prev.filter((id) => id !== specId);
+      return [...newSpecs, specId];
+    });
   };
 
   const handleContinue = () => {
@@ -116,8 +145,12 @@ export default function Servidores() {
                           {spec.name}
                         </Label>
                         {hasSubSpecsSelected && (
-                          <Badge variant="secondary" className="text-xs">
-                            {selectedSubSpecsForThisSpec.length} seleccionada(s)
+                          <Badge
+                            variant="secondary"
+                            className="text-xs bg-blue-100 text-blue-800"
+                          >
+                            {selectedSubSpecsForThisSpec.length} específica
+                            seleccionada
                           </Badge>
                         )}
                       </div>
@@ -143,10 +176,13 @@ export default function Servidores() {
 
                           {isExpanded && (
                             <div className="mt-3 ml-6 space-y-3">
+                              <div className="text-xs text-blue-600 mb-2 font-medium">
+                                ⚠️ Selecciona solo una opción específica
+                              </div>
                               {spec.subOptions.map((subOption) => (
                                 <div
                                   key={subOption.id}
-                                  className="flex items-start space-x-3 p-3 bg-white rounded border"
+                                  className="flex items-start space-x-3 p-3 bg-white rounded border hover:bg-blue-50 transition-colors"
                                 >
                                   <Checkbox
                                     id={`${spec.id}-${subOption.id}`}
@@ -259,9 +295,9 @@ export default function Servidores() {
                     return (
                       <span
                         key={subSpecId}
-                        className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm"
+                        className="bg-green-100 text-green-800 px-2 py-1 rounded text-sm border border-green-200"
                       >
-                        {subOption?.name}
+                        ⚡ {subOption?.name}
                       </span>
                     );
                   })}
