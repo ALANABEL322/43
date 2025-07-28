@@ -18,6 +18,8 @@ import {
   AlertTriangle,
   LogOut,
   BarChart3,
+  Handshake,
+  LayoutDashboard,
 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
@@ -56,7 +58,7 @@ export default function SidebarUser() {
                     onClick={() => navigate(paths.user.landingPage)}
                     className="w-full"
                   >
-                    <Home className="h-4 w-4 text-white" />
+                    <LayoutDashboard className="h-4 w-4 text-white" />
                     <span className="text-white">Inicio</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -96,7 +98,7 @@ export default function SidebarUser() {
                     onClick={() => navigate(paths.user.support)}
                     className="w-full"
                   >
-                    <Users className="h-4 w-4 text-white" />
+                    <Handshake className="h-4 w-4 text-white" />
                     <span className="text-white">Soporte</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

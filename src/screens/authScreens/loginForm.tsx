@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, Crown, User } from "lucide-react";
 import { paths } from "@/routes/paths";
 import { api, MOCK_USERS } from "@/api/auth";
+import { toast } from "sonner";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -30,8 +31,10 @@ export default function LoginForm() {
         } else {
           navigate("/user");
         }
+
+        toast.success("Inicio de sesión exitoso");
       } else {
-        setError(response.error || "Error al iniciar sesión");
+        toast.error(response.error || "Error al iniciar sesión");
       }
     } catch (err) {
       setError("Error al iniciar sesión");
@@ -108,6 +111,7 @@ export default function LoginForm() {
               type="button"
               className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
               onClick={() => setShowPassword(!showPassword)}
+              disabled={isLoading}
             >
               {showPassword ? (
                 <EyeOff className="h-4 w-4" />

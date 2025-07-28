@@ -1,6 +1,6 @@
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '@/store/authStore';
-import { paths } from './paths';
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuthStore } from "@/store/authStore";
+import { paths } from "./paths";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -8,22 +8,22 @@ interface ProtectedRouteProps {
   userOnly?: boolean;
 }
 
-export default function ProtectedRoute({ 
-  children, 
-  adminOnly = false, 
-  userOnly = false 
+export default function ProtectedRoute({
+  children,
+  adminOnly = false,
+  userOnly = false,
 }: ProtectedRouteProps) {
   const location = useLocation();
-  const user = useAuthStore(state => state.user);
-  const isAuthenticated = useAuthStore(state => state.isAuthenticated);
-  const isAdmin = useAuthStore(state => state.isAdmin());
-
+  const user = useAuthStore((state) => state.user);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isAdmin = useAuthStore((state) => state.isAdmin());
 
   // Redirigir si no está autenticado
   if (!isAuthenticated) {
-    return <Navigate to={paths.auth.login} state={{ from: location }} replace />;
+    return (
+      <Navigate to={paths.auth.login} state={{ from: location }} replace />
+    );
   }
-
 
   // Admin intentando acceder a ruta de usuario
   if (userOnly && isAdmin) {
@@ -39,7 +39,6 @@ export default function ProtectedRoute({
   if (!user?.role) {
     return <Navigate to={paths.auth.login} replace />;
   }
-
 
   // Verificación de roles
   if (adminOnly && !isAdmin) {
