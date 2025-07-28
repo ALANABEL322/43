@@ -23,6 +23,9 @@ import { UserSupportPage } from "@/screens/(user)/support";
 import ProtectedRoute from "./ProtectedRoute";
 import { Inicio } from "@/screens/(user)/inicio";
 import Perfil from "@/screens/(user)/perfil";
+import Servidores from "@/screens/(user)/servidores";
+import ServidoresProcesando from "@/screens/(user)/servidoresProcesando";
+import ServidoresRecomendaciones from "@/screens/(user)/servidoresRecomendaciones";
 
 export const publicRoutes: RouteObject[] = [
   {
@@ -108,6 +111,18 @@ export const userRoutes: RouteObject[] = [
       {
         path: paths.user.support,
         element: <UserSupportPage />,
+      },
+      {
+        path: paths.user.servidores,
+        element: <Servidores />,
+      },
+      {
+        path: paths.user.servidoresProcesando,
+        element: <ServidoresProcesando />,
+      },
+      {
+        path: paths.user.servidoresRecomendaciones,
+        element: <ServidoresRecomendaciones />,
       },
     ],
   },
