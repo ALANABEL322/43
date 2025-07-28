@@ -201,69 +201,30 @@ export default function LandingPage() {
           <div className="relative w-full h-full">
             <img
               src={img1}
-              alt="Persona trabajando en laptop"
-              className="object-cover rounded-lg"
+              alt="Equipo colaborando en infraestructura en la nube"
+              className="w-full h-64 object-cover rounded-lg"
             />
           </div>
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold tracking-tight">
-              Optimizando recursos: beneficios que no te puedes perder
-            </h1>
-            <p className="text-gray-700 leading-relaxed">
-              Automatiza la gestión de recursos en la nube y gana en eficiencia
-              operativa, reduciendo costos y mejorando el rendimiento de tus
-              aplicaciones. Adáptate a las demandas del mercado con mayor
-              flexibilidad y seguridad, aprovechando las tecnologías de
-              inteligencia artificial para mantener una ventaja competitiva.
-            </p>
+          <div className="space-y-4">
+            <img
+              src={img2}
+              alt="Persona trabajando en laptop"
+              className="w-full h-48 object-cover rounded-lg"
+            />
           </div>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold tracking-tight">
-              Automatiza, escala y mejora tu rendimiento
-            </h2>
-            <p className="text-gray-700 leading-relaxed">
-              Disfruta de una interfaz intuitiva que facilita la gestión de tu
-              servidor. Automatiza la optimización de recursos con inteligencia
-              artificial y mejora la flexibilidad con microservicios. Además,
-              cuenta con soporte técnico continuo para garantizar un rendimiento
-              óptimo.
-            </p>
-
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-6 rounded-md text-lg font-medium">
-              <Link to={paths.user.inicio}>Comenzar</Link>
-            </Button>
+          <div className="space-y-4">
+            <img
+              src={img3}
+              alt="Laptop en mesa"
+              className="w-full h-48 object-cover rounded-lg"
+            />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="col-span-1">
-              <div className="relative w-full h-[200px]">
-                <img
-                  src={img2}
-                  alt="Laptop en mesa"
-                  className="object-cover w-full h-[26rem]  rounded-lg"
-                />
-              </div>
-            </div>
-            <div className="col-span-1">
-              <div className="relative w-full h-[200px]">
-                <img
-                  src={img3}
-                  alt="Personas colaborando"
-                  className="object-cover w-full h-full rounded-lg"
-                />
-              </div>
-            </div>
-            <div className="col-start-2 col-span-1">
-              <div className="relative w-full h-[200px]">
-                <img
-                  src={img4}
-                  alt="Equipo trabajando"
-                  className="object-cover w-full h-full rounded-lg"
-                />
-              </div>
-            </div>
+          <div className="space-y-4">
+            <img
+              src={img4}
+              alt="Personas colaborando"
+              className="w-full h-48 object-cover rounded-lg"
+            />
           </div>
         </div>
       </div>

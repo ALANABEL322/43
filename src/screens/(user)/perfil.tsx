@@ -76,11 +76,9 @@ export default function Perfil() {
           <div className="flex flex-col items-center">
             <div className="relative">
               <img
-                src="https://res.cloudinary.com/dn5ltihzv/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1743794213/imagen-perfil-admin_iaba6n.jpg"
-                alt="Profile picture"
-                width={144}
-                height={144}
-                className="rounded-full object-cover"
+                src={user.avatar}
+                alt="Foto de perfil"
+                className="h-32 w-32 rounded-full object-cover"
               />
               <button
                 type="button"

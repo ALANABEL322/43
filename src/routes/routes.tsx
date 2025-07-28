@@ -8,7 +8,6 @@ import AuthLayout from "@/screens/authScreens/authLayout";
 // Auth pages
 import LoginForm from "@/screens/authScreens/loginForm";
 import RegisterForm from "@/screens/authScreens/registerForm";
-import Home from "@/screens/home";
 
 // Admin pages
 import UsersPage from "@/screens/(admin)/users";
@@ -32,24 +31,28 @@ import Configuracion from "@/screens/(user)/configuracion";
 
 export const publicRoutes: RouteObject[] = [
   {
+    path: paths.auth.root,
+    element: <AuthLayout />,
+    children: [
+      {
+        path: "login",
+        element: <LoginForm />,
+      },
+      {
+        path: "register",
+        element: <RegisterForm />,
+      },
+    ],
+  },
+  {
     path: paths.root,
-    element: <Home />,
-  },
-  {
-    path: paths.auth.login,
-    element: (
-      <AuthLayout>
-        <LoginForm />
-      </AuthLayout>
-    ),
-  },
-  {
-    path: paths.auth.register,
-    element: (
-      <AuthLayout>
-        <RegisterForm />
-      </AuthLayout>
-    ),
+    element: <AuthLayout />,
+    children: [
+      {
+        index: true,
+        element: <LoginForm />,
+      },
+    ],
   },
 ];
 

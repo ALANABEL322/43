@@ -6,7 +6,7 @@ import LandingSection from "./landingSection";
 import rectangulo from "../../../assets/Rectangle 1.png";
 
 export default function LandingPage() {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [_activeTab, _setActiveTab] = useState("overview");
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-emerald-50 to-white">

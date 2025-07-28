@@ -31,7 +31,6 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => {
-
       return {
         user: null,
         currentUser: null,
@@ -96,6 +95,8 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             role: null,
           });
+          // Redirect to login after logout
+          window.location.href = "/auth/login";
         },
 
         getCurrentUser: () => get().currentUser,

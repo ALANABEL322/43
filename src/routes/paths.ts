@@ -1,8 +1,9 @@
 export const paths = {
   // Auth routes
   auth: {
-    login: "/login",
-    register: "/register",
+    root: "/auth",
+    login: "/auth/login",
+    register: "/auth/register",
   },
   // Admin routes
   admin: {

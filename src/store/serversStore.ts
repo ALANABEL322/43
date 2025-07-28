@@ -29,6 +29,14 @@ export interface UserServerRequirements {
   additionalNotes: string;
 }
 
+export interface ServerEvent {
+  id: string;
+  type: "update" | "restart" | "start" | "stop" | "maintenance";
+  description: string;
+  timestamp: string;
+  status: "success" | "warning" | "error";
+}
+
 export interface ServerMetrics {
   cpu: {
     current: number;
@@ -64,6 +72,7 @@ export interface SelectedServer {
   metrics: ServerMetrics;
   isActive: boolean;
   deploymentDate: string;
+  events: ServerEvent[];
 }
 
 interface ServersState {
@@ -81,6 +90,10 @@ interface ServersState {
   updateServerMetrics: (metrics: Partial<ServerMetrics>) => void;
   clearSelectedServer: () => void;
   generateMockMetrics: (serverId: string) => ServerMetrics;
+  addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => void;
+  getServerEvents: () => ServerEvent[];
+  resetServerEvents: () => void;
+  deleteServerEvent: (eventId: string) => void;
 }
 
 export const useServersStore = create<ServersState>()(
@@ -600,12 +613,37 @@ export const useServersStore = create<ServersState>()(
       },
 
       selectServer: (server: PredefinedServer) => {
+        const initialEvents: ServerEvent[] = [
+          {
+            id: `event-${Date.now()}-1`,
+            type: "start",
+            description: "Servidor iniciado y funcionando correctamente",
+            timestamp: new Date().toISOString(),
+            status: "success",
+          },
+          {
+            id: `event-${Date.now()}-2`,
+            type: "update",
+            description: "Actualización de seguridad aplicada",
+            timestamp: new Date(Date.now() - 3600000).toISOString(), // 1 hora atrás
+            status: "success",
+          },
+          {
+            id: `event-${Date.now()}-3`,
+            type: "maintenance",
+            description: "Mantenimiento preventivo realizado",
+            timestamp: new Date(Date.now() - 7200000).toISOString(), // 2 horas atrás
+            status: "success",
+          },
+        ];
+
         set({
           selectedServer: {
             server,
             metrics: get().generateMockMetrics(server.id),
             isActive: true,
             deploymentDate: new Date().toISOString(),
+            events: initialEvents, // Asegurar que sea un array
           },
         });
       },
@@ -736,6 +774,67 @@ export const useServersStore = create<ServersState>()(
           lastUpdate: new Date().toISOString(),
         };
         return mockMetrics;
+      },
+      addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => {
+        const currentState = get();
+        if (currentState.selectedServer) {
+          // Asegurar que events sea un array
+          const currentEvents = Array.isArray(
+            currentState.selectedServer.events
+          )
+            ? currentState.selectedServer.events
+            : [];
+
+          set({
+            selectedServer: {
+              ...currentState.selectedServer,
+              events: [
+                ...currentEvents,
+                {
+                  id: `event-${Date.now()}-${Math.random()
+                    .toString(36)
+                    .substr(2, 9)}`,
+                  timestamp: new Date().toISOString(),
+                  ...event,
+                },
+              ],
+            },
+          });
+        }
+      },
+      getServerEvents: () => {
+        const currentState = get();
+        if (
+          currentState.selectedServer &&
+          Array.isArray(currentState.selectedServer.events)
+        ) {
+          return currentState.selectedServer.events;
+        }
+        return [];
+      },
+      resetServerEvents: () => {
+        const currentState = get();
+        if (currentState.selectedServer) {
+          set({
+            selectedServer: {
+              ...currentState.selectedServer,
+              events: [], // Resetear los eventos
+            },
+          });
+        }
+      },
+      deleteServerEvent: (eventId: string) => {
+        const currentState = get();
+        if (currentState.selectedServer) {
+          set({
+            selectedServer: {
+              ...currentState.selectedServer,
+              events: currentState.selectedServer.events.filter(
+                (event) => event.id !== eventId
+              ),
+            },
+          });
+        }
       },
     }),
     {

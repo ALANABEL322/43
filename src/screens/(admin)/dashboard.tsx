@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pencil } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 export default function DashboardAdmin() {
   const [profileData, setProfileData] = useState({
@@ -55,10 +56,8 @@ export default function DashboardAdmin() {
             <div className="relative">
               <img
                 src="https://res.cloudinary.com/dn5ltihzv/image/upload/w_1000,c_fill,ar_1:1,g_auto,r_max,bo_5px_solid_red,b_rgb:262c35/v1743794213/imagen-perfil-admin_iaba6n.jpg"
-                alt="Profile picture"
-                width={144}
-                height={144}
-                className="rounded-full object-cover"
+                alt="Foto de perfil"
+                className="h-10 w-10 rounded-full"
               />
               <button
                 type="button"
