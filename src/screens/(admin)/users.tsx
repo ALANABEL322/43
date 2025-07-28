@@ -14,7 +14,6 @@ interface User {
   avatar?: string;
 }
 
-// Usuarios mockeados
 const MOCK_USERS: User[] = [
   {
     id: 1,
@@ -70,7 +69,6 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Simular carga inicial
     setLoading(true);
     setTimeout(() => {
       setUsers(MOCK_USERS);
@@ -81,7 +79,6 @@ export default function UsersPage() {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      // Simular delay de carga
       await new Promise((resolve) => setTimeout(resolve, 300));
       setUsers(MOCK_USERS);
       toast.success("Lista de usuarios actualizada");

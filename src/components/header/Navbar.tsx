@@ -17,8 +17,8 @@ export default function Navbar() {
     navigate(paths.auth.login);
   };
 
-  // Contar alertas activas y no leídas
-  const activeAlerts = alerts.filter((alert) => alert.isActive);
+
+  const _activeAlerts = alerts.filter((alert) => alert.isActive);
   const unreadAlerts = alerts.filter(
     (alert) => !alert.isRead && alert.isActive
   );

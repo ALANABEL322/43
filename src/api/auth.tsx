@@ -16,7 +16,6 @@ export interface APIUser {
   avatar: string;
 }
 
-// Usuarios mockeados predefinidos para fácil acceso
 export const MOCK_USERS = {
   admin: {
     email: "admin@admin.com",
@@ -30,7 +29,6 @@ export const MOCK_USERS = {
     username: "Usuario",
     role: "user" as UserRole,
   },
-  // Mantener el admin original como respaldo
   systemAdmin: {
     email: "ADMIN123@gmail.com",
     password: "ADMIN123",
@@ -44,12 +42,10 @@ export const api = {
   async login(email: string, password: string) {
     console.log("Auth API: Login attempt for:", email);
     try {
-      // Verificar usuarios mockeados primero
       const mockAdmin = MOCK_USERS.admin;
       const mockUser = MOCK_USERS.user;
       const systemAdmin = MOCK_USERS.systemAdmin;
 
-      // Verificar admin mockeado
       if (email === mockAdmin.email && password === mockAdmin.password) {
         const adminUser: User = {
           id: "mock-admin",
@@ -62,7 +58,6 @@ export const api = {
         return { success: true, user: adminUser };
       }
 
-      // Verificar usuario normal mockeado
       if (email === mockUser.email && password === mockUser.password) {
         const normalUser: User = {
           id: "mock-user",
@@ -75,7 +70,6 @@ export const api = {
         return { success: true, user: normalUser };
       }
 
-      // Verificar admin del sistema (mantener compatibilidad)
       if (email === systemAdmin.email && password === systemAdmin.password) {
         const adminUser: User = {
           id: "system-admin",
@@ -96,7 +90,6 @@ export const api = {
       if (localUser) {
         console.log("Auth API: Local user found:", localUser.email);
 
-        // Verificar contraseña
         if (localUser.password === password) {
           console.log("Auth API: Local user authenticated successfully");
           store.setCurrentUser(localUser);

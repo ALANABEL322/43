@@ -10,7 +10,7 @@ export interface Alert {
   isRead: boolean;
   isActive: boolean;
   category: "performance" | "cost" | "security" | "maintenance" | "resource";
-  severity: number; // 1-5, donde 5 es más crítico
+  severity: number;
   actionRequired?: boolean;
   actionTaken?: boolean;
 }
@@ -42,7 +42,6 @@ interface AlertsState {
   alertSettings: AlertSettings;
   metrics: AlertMetrics;
 
-  // Actions
   addAlert: (
     alert: Omit<Alert, "id" | "timestamp" | "isRead" | "isActive">
   ) => void;
@@ -174,7 +173,6 @@ export const useAlertsStore = create<AlertsState>()(
         },
 
         generateMockAlerts: () => {
-          // Limpiar alertas existentes para evitar duplicados
           set({ alerts: [] });
 
           const mockAlerts: Omit<
@@ -234,7 +232,6 @@ export const useAlertsStore = create<AlertsState>()(
             },
           ];
 
-          // Agregar alertas de forma síncrona con IDs únicos garantizados
           mockAlerts.forEach((alert) => {
             const newAlert: Alert = {
               ...alert,

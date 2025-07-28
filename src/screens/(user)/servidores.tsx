@@ -23,15 +23,12 @@ export default function Servidores() {
   const handleSpecToggle = (specId: string) => {
     setSelectedSpecs((prev) => {
       if (prev.includes(specId)) {
-        // Si la categoría está seleccionada, la deseleccionamos
         return prev.filter((id) => id !== specId);
       } else {
-        // Si no está seleccionada, la agregamos
         return [...prev, specId];
       }
     });
 
-    // Si se selecciona una categoría completa, deseleccionar todas las subopciones de esa categoría
     const spec = specifications.find((s) => s.id === specId);
     if (spec && spec.subOptions) {
       const subOptionsToRemove = spec.subOptions.map((subOpt) => subOpt.id);
@@ -44,11 +41,8 @@ export default function Servidores() {
   const handleSubOptionToggle = (subSpecId: string, specId: string) => {
     setSelectedSubSpecs((prev) => {
       if (prev.includes(subSpecId)) {
-        // Si ya está seleccionada, la deseleccionamos
         return prev.filter((id) => id !== subSpecId);
       } else {
-        // Si no está seleccionada, deseleccionamos todas las subopciones de esta categoría
-        // y seleccionamos solo la nueva
         const otherSubSpecsInCategory = prev.filter((id) => {
           const spec = specifications.find((s) => s.id === specId);
           return (
@@ -64,8 +58,6 @@ export default function Servidores() {
       }
     });
 
-    // Si se selecciona una sub-opción, deseleccionar la categoría principal
-    // y seleccionar la especificación principal
     setSelectedSpecs((prev) => {
       const newSpecs = prev.filter((id) => id !== specId);
       return [...newSpecs, specId];
@@ -79,7 +71,7 @@ export default function Servidores() {
         selectedSubSpecs,
         additionalNotes,
       });
-      // Navegar a la pantalla de procesamiento de IA
+
       navigate(paths.user.servidoresProcesando);
     }
   };

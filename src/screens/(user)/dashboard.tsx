@@ -52,7 +52,6 @@ export function UserDashboard() {
     eventDescription: "",
   });
 
-  // Obtener eventos recientes (últimos 5)
   const recentEvents = selectedServer
     ? selectedServer.events.slice(-5).reverse()
     : [];
@@ -109,7 +108,7 @@ export function UserDashboard() {
     }
   };
 
-  // Actualizar métricas cada 5 segundos si hay un servidor seleccionado y está corriendo
+
   useEffect(() => {
     if (!selectedServer || !isServerRunning) return;
 
@@ -185,7 +184,7 @@ export function UserDashboard() {
       },
     });
 
-    // Agregar evento de detención con manejo de errores
+
     try {
       addServerEvent({
         type: "stop",
@@ -196,7 +195,7 @@ export function UserDashboard() {
       console.error("Error al agregar evento:", error);
     }
 
-    // Habilitar botones después de un breve delay
+
     setTimeout(() => {
       setIsOperationInProgress(false);
     }, 1000);
@@ -210,7 +209,7 @@ export function UserDashboard() {
       status: "online",
     });
 
-    // Agregar evento de inicio con manejo de errores
+
     try {
       addServerEvent({
         type: "start",
@@ -221,7 +220,7 @@ export function UserDashboard() {
       console.error("Error al agregar evento:", error);
     }
 
-    // Habilitar botones después de un breve delay
+
     setTimeout(() => {
       setIsOperationInProgress(false);
     }, 1000);
@@ -233,7 +232,7 @@ export function UserDashboard() {
     setIsRestarting(true);
     setIsServerRunning(false);
 
-    // Agregar evento de reinicio con manejo de errores
+
     try {
       addServerEvent({
         type: "restart",
@@ -244,7 +243,7 @@ export function UserDashboard() {
       console.error("Error al agregar evento:", error);
     }
 
-    // Simular proceso de reinicio
+
     setTimeout(() => {
       setIsServerRunning(true);
       setIsRestarting(false);
@@ -252,7 +251,7 @@ export function UserDashboard() {
         status: "online",
       });
 
-      // Agregar evento de reinicio completado con manejo de errores
+
       try {
         addServerEvent({
           type: "restart",
@@ -263,11 +262,11 @@ export function UserDashboard() {
         console.error("Error al agregar evento:", error);
       }
 
-      // Habilitar botones después del reinicio
+
       setTimeout(() => {
         setIsOperationInProgress(false);
       }, 500);
-    }, 3000); // 3 segundos de reinicio
+    }, 3000); 
   };
 
   const getStatusColor = (status: string) => {
@@ -307,7 +306,7 @@ export function UserDashboard() {
     <div className="w-full max-w-7xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold">Panel de Monitoreo</h1>
 
-      {/* Servidor Seleccionado Card */}
+
       {selectedServer ? (
         <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
           <CardHeader>
@@ -443,9 +442,7 @@ export function UserDashboard() {
         </Card>
       )}
 
-      {/* Top metrics section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {/* CPU Usage */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-medium text-gray-600 flex items-center gap-2">
@@ -503,7 +500,6 @@ export function UserDashboard() {
           </CardContent>
         </Card>
 
-        {/* Memory Usage */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-base font-medium text-gray-600 flex items-center gap-2">

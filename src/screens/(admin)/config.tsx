@@ -45,24 +45,19 @@ export default function Config() {
     if (!currentAction) return;
 
     if (currentAction.type === "resize") {
-      // Handle resize logic
       console.log(`Resizing ${currentAction.field}`);
     } else if (currentAction.type === "delete") {
-      // Handle delete logic
       console.log(`Deleting ${currentAction.field}`);
 
-      // Clear the field value
       if (currentAction.field === "disk") setDiskSize("");
       if (currentAction.field === "memory") setMemory("");
       if (currentAction.field === "storage") setStorage("");
     }
 
-    // Close dialogs
     setIsResizeDialogOpen(false);
     setIsDeleteDialogOpen(false);
   };
 
-  // Sample firewall rules data
   const firewallRules = [
     {
       title: "Bloqueo de Puertos Comunes",
