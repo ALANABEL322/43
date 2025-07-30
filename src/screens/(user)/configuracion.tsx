@@ -14,6 +14,13 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Server,
   Settings,
   HardDrive,
@@ -31,11 +38,10 @@ import { paths } from "@/routes/paths";
 import { cn } from "@/lib/utils";
 
 interface ServerConfig {
-  diskSize: number;
   memory: number;
   storage: number;
-  cpu: number;
-  bandwidth: number;
+  vCpu: number;
+  transfer: number;
 }
 
 export default function Configuracion() {
@@ -43,11 +49,10 @@ export default function Configuracion() {
   const { selectedServer, updateServerMetrics } = useServersStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [config, setConfig] = useState<ServerConfig>({
-    diskSize: 0,
     memory: 0,
     storage: 0,
-    cpu: 0,
-    bandwidth: 0,
+    vCpu: 1,
+    transfer: 0,
   });
 
   const [isConfiguring, setIsConfiguring] = useState(false);
@@ -55,11 +60,10 @@ export default function Configuracion() {
   useState(() => {
     if (selectedServer) {
       setConfig({
-        diskSize: Math.round(selectedServer.metrics.storage.total / 1024),
         memory: selectedServer.metrics.memory.total,
         storage: Math.round(selectedServer.metrics.storage.total / 1024),
-        cpu: selectedServer.metrics.cpu.current,
-        bandwidth: selectedServer.metrics.network.bandwidth,
+        vCpu: selectedServer.metrics.cpu.current,
+        transfer: selectedServer.metrics.network.bandwidth,
       });
     }
   });
@@ -68,6 +72,13 @@ export default function Configuracion() {
     setConfig((prev) => ({
       ...prev,
       [field]: parseInt(value) || 0,
+    }));
+  };
+
+  const handleVCpuChange = (value: string) => {
+    setConfig((prev) => ({
+      ...prev,
+      vCpu: parseInt(value),
     }));
   };
 
@@ -90,11 +101,11 @@ export default function Configuracion() {
         },
         network: {
           ...selectedServer.metrics.network,
-          bandwidth: config.bandwidth,
+          bandwidth: config.transfer,
         },
         cpu: {
           ...selectedServer.metrics.cpu,
-          current: config.cpu,
+          current: config.vCpu,
         },
       });
     }
@@ -172,16 +183,16 @@ export default function Configuracion() {
             <div className="text-center p-4 bg-purple-50 rounded-lg">
               <Cpu className="h-8 w-8 text-purple-600 mx-auto mb-2" />
               <p className="text-2xl font-bold">
-                {selectedServer.metrics.cpu.current}%
+                {selectedServer.metrics.cpu.current}
               </p>
-              <p className="text-sm text-gray-600">CPU</p>
+              <p className="text-sm text-gray-600">vCPU Núcleos</p>
             </div>
             <div className="text-center p-4 bg-orange-50 rounded-lg">
               <Network className="h-8 w-8 text-orange-600 mx-auto mb-2" />
               <p className="text-2xl font-bold">
-                {selectedServer.metrics.network.bandwidth} Mbps
+                {selectedServer.metrics.network.bandwidth} GB/mes
               </p>
-              <p className="text-sm text-gray-600">Ancho de Banda</p>
+              <p className="text-sm text-gray-600">Transferencia</p>
             </div>
           </div>
         </CardContent>
@@ -199,20 +210,6 @@ export default function Configuracion() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
-                <Label htmlFor="current-disk">Tamaño de Disco</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Input
-                    id="current-disk"
-                    value={`${Math.round(
-                      selectedServer.metrics.storage.total / 1024
-                    )} GB`}
-                    disabled
-                    className="bg-gray-50"
-                  />
-                  <CheckCircle className="h-5 w-5 text-green-600" />
-                </div>
-              </div>
-              <div>
                 <Label htmlFor="current-memory">Memoria RAM</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <Input
@@ -225,19 +222,17 @@ export default function Configuracion() {
                 </div>
               </div>
               <div>
-                <Label htmlFor="current-cpu">CPU</Label>
+                <Label htmlFor="current-vcpu">vCPU</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <Input
-                    id="current-cpu"
-                    value={`${selectedServer.metrics.cpu.current}%`}
+                    id="current-vcpu"
+                    value={`${selectedServer.metrics.cpu.current} núcleos`}
                     disabled
                     className="bg-gray-50"
                   />
                   <CheckCircle className="h-5 w-5 text-green-600" />
                 </div>
               </div>
-            </div>
-            <div className="space-y-4">
               <div>
                 <Label htmlFor="current-storage">Almacenamiento</Label>
                 <div className="flex items-center gap-2 mt-1">
@@ -252,12 +247,14 @@ export default function Configuracion() {
                   <CheckCircle className="h-5 w-5 text-green-600" />
                 </div>
               </div>
+            </div>
+            <div className="space-y-4">
               <div>
-                <Label htmlFor="current-bandwidth">Ancho de Banda</Label>
+                <Label htmlFor="current-transfer">Transferencia</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <Input
-                    id="current-bandwidth"
-                    value={`${selectedServer.metrics.network.bandwidth} Mbps`}
+                    id="current-transfer"
+                    value={`${selectedServer.metrics.network.bandwidth} GB/mes`}
                     disabled
                     className="bg-gray-50"
                   />
@@ -290,7 +287,7 @@ export default function Configuracion() {
               Modificar Configuración
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] bg-gray-100/100 backdrop-blur-sm">
             <DialogHeader>
               <DialogTitle>Modificar Configuración del Servidor</DialogTitle>
               <DialogDescription>
@@ -301,18 +298,6 @@ export default function Configuracion() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="disk-size">Tamaño de Disco (GB)</Label>
-                  <Input
-                    id="disk-size"
-                    type="number"
-                    value={config.diskSize}
-                    onChange={(e) =>
-                      handleConfigChange("diskSize", e.target.value)
-                    }
-                    placeholder="Ej: 500"
-                  />
-                </div>
-                <div>
                   <Label htmlFor="memory">Memoria RAM (GB)</Label>
                   <Input
                     id="memory"
@@ -322,17 +307,28 @@ export default function Configuracion() {
                       handleConfigChange("memory", e.target.value)
                     }
                     placeholder="Ej: 16"
+                    className="bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="cpu">CPU (%)</Label>
-                  <Input
-                    id="cpu"
-                    type="number"
-                    value={config.cpu}
-                    onChange={(e) => handleConfigChange("cpu", e.target.value)}
-                    placeholder="Ej: 75"
-                  />
+                  <Label htmlFor="vcpu">vCPU (Núcleos Virtuales)</Label>
+                  <Select
+                    value={config.vCpu.toString()}
+                    onValueChange={handleVCpuChange}
+                  >
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Seleccionar núcleos" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 núcleo</SelectItem>
+                      <SelectItem value="2">2 núcleos</SelectItem>
+                      <SelectItem value="3">3 núcleos</SelectItem>
+                      <SelectItem value="4">4 núcleos</SelectItem>
+                      <SelectItem value="8">8 núcleos</SelectItem>
+                      <SelectItem value="16">16 núcleos</SelectItem>
+                      <SelectItem value="24">24 núcleos</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-4">
@@ -346,26 +342,28 @@ export default function Configuracion() {
                       handleConfigChange("storage", e.target.value)
                     }
                     placeholder="Ej: 1000"
+                    className="bg-white"
                   />
                 </div>
                 <div>
-                  <Label htmlFor="bandwidth">Ancho de Banda (Mbps)</Label>
+                  <Label htmlFor="transfer">Transferencia (GB/mes)</Label>
                   <Input
-                    id="bandwidth"
+                    id="transfer"
                     type="number"
-                    value={config.bandwidth}
+                    value={config.transfer}
                     onChange={(e) =>
-                      handleConfigChange("bandwidth", e.target.value)
+                      handleConfigChange("transfer", e.target.value)
                     }
-                    placeholder="Ej: 250"
+                    placeholder="Ej: 5000"
+                    className="bg-white"
                   />
                 </div>
-                <div className="p-4 bg-yellow-50 rounded-lg">
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertTriangle className="h-4 w-4 text-yellow-600" />
-                    <span className="font-medium text-yellow-800">Nota</span>
+                    <AlertTriangle className="h-4 w-4 text-blue-600" />
+                    <span className="font-medium text-blue-800">Nota</span>
                   </div>
-                  <p className="text-sm text-yellow-700">
+                  <p className="text-sm text-blue-700">
                     Los cambios en la configuración pueden afectar el precio
                     mensual del servidor.
                   </p>
