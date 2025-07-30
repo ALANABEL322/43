@@ -88,6 +88,7 @@ interface ServersState {
   clearUserRequirements: () => void;
   selectServer: (server: PredefinedServer) => void;
   updateServerMetrics: (metrics: Partial<ServerMetrics>) => void;
+  updateServerMetricsSmooth: () => void;
   clearSelectedServer: () => void;
   generateMockMetrics: (serverId: string) => ServerMetrics;
   addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => void;
@@ -727,52 +728,205 @@ export const useServersStore = create<ServersState>()(
             networkBase = { current: 55, total: 700, bandwidth: 200 };
         }
 
+        // INTERCAMBIO: Lo que era storage usage % ahora es memory current %
+        // Lo que era memory current % ahora es storage usage %
+        const storageUsagePercent = Math.floor(
+          (storageBase.used / storageBase.total) * 100
+        );
+
         const mockMetrics: ServerMetrics = {
           cpu: {
-            current: cpuBase.current + Math.floor(Math.random() * 20) - 10,
+            // CPU con fluctuación mínima (±2 en lugar de ±10)
+            current: Math.max(
+              0,
+              Math.min(100, cpuBase.current + Math.floor(Math.random() * 4) - 2)
+            ),
             average: cpuBase.average,
             critical: cpuBase.critical,
-            history: Array.from(
-              { length: 10 },
-              () => cpuBase.average + Math.floor(Math.random() * 30) - 15
+            history: Array.from({ length: 10 }, () =>
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  cpuBase.average + Math.floor(Math.random() * 6) - 3
+                )
+              )
             ),
           },
           memory: {
-            current: memoryBase.current + Math.floor(Math.random() * 20) - 10,
-            average: memoryBase.average,
+            // Memory sin fluctuación - usa el % de storage como valor fijo
+            current: storageUsagePercent,
+            average: storageUsagePercent,
             total: memoryBase.total,
-            history: Array.from(
-              { length: 10 },
-              () => memoryBase.average + Math.floor(Math.random() * 30) - 15
-            ),
+            history: Array.from({ length: 10 }, () => storageUsagePercent),
           },
           network: {
-            current: networkBase.current + Math.floor(Math.random() * 20) - 10,
+            current: Math.max(
+              0,
+              Math.min(
+                100,
+                networkBase.current + Math.floor(Math.random() * 20) - 10
+              )
+            ),
             total: networkBase.total,
             bandwidth: networkBase.bandwidth,
-            history: Array.from(
-              { length: 10 },
-              () => networkBase.current + Math.floor(Math.random() * 30) - 15
+            history: Array.from({ length: 10 }, () =>
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  networkBase.current + Math.floor(Math.random() * 30) - 15
+                )
+              )
             ),
           },
           storage: {
-            used: storageBase.used + Math.floor(Math.random() * 50) - 25,
+            // Storage ahora usa el % de memory como base
+            used: Math.floor((memoryBase.current / 100) * storageBase.total),
             total: storageBase.total,
             available:
-              storageBase.available + Math.floor(Math.random() * 50) - 25,
-            history: Array.from(
-              { length: 10 },
-              () =>
-                Math.floor((storageBase.used / storageBase.total) * 100) +
-                Math.floor(Math.random() * 20) -
-                10
-            ),
+              storageBase.total -
+              Math.floor((memoryBase.current / 100) * storageBase.total),
+            history: Array.from({ length: 10 }, () => memoryBase.current),
           },
           status: "online",
           uptime: Math.floor(Math.random() * 10000) + 5000,
           lastUpdate: new Date().toISOString(),
         };
         return mockMetrics;
+      },
+
+      // Nueva función para actualización suave de métricas
+      updateServerMetricsSmooth: () => {
+        const currentState = get();
+        if (!currentState.selectedServer) return;
+
+        const currentMetrics = currentState.selectedServer.metrics;
+        const serverId = currentState.selectedServer.server.id;
+
+        // Generar nuevos valores base según el servidor
+        let cpuBase, memoryBase, storageBase, networkBase;
+
+        switch (serverId) {
+          case "basic-web":
+            cpuBase = { current: 45, average: 35, critical: 5 };
+            memoryBase = { current: 60, average: 50, total: 8 };
+            storageBase = { used: 50, total: 100, available: 50 };
+            networkBase = { current: 40, total: 500, bandwidth: 100 };
+            break;
+          case "business-server":
+            cpuBase = { current: 65, average: 55, critical: 8 };
+            memoryBase = { current: 75, average: 65, total: 16 };
+            storageBase = { used: 300, total: 500, available: 200 };
+            networkBase = { current: 60, total: 800, bandwidth: 250 };
+            break;
+          case "enterprise-server":
+            cpuBase = { current: 80, average: 70, critical: 12 };
+            memoryBase = { current: 85, average: 75, total: 32 };
+            storageBase = { used: 800, total: 1000, available: 200 };
+            networkBase = { current: 75, total: 1200, bandwidth: 500 };
+            break;
+          case "database-server":
+            cpuBase = { current: 70, average: 60, critical: 10 };
+            memoryBase = { current: 90, average: 80, total: 32 };
+            storageBase = { used: 600, total: 1000, available: 400 };
+            networkBase = { current: 55, total: 900, bandwidth: 300 };
+            break;
+          case "storage-server":
+            cpuBase = { current: 30, average: 25, critical: 3 };
+            memoryBase = { current: 40, average: 35, total: 16 };
+            storageBase = { used: 1500, total: 2000, available: 500 };
+            networkBase = { current: 45, total: 600, bandwidth: 150 };
+            break;
+          case "development-server":
+            cpuBase = { current: 55, average: 45, critical: 6 };
+            memoryBase = { current: 70, average: 60, total: 8 };
+            storageBase = { used: 80, total: 100, available: 20 };
+            networkBase = { current: 50, total: 400, bandwidth: 100 };
+            break;
+          default:
+            cpuBase = { current: 50, average: 40, critical: 7 };
+            memoryBase = { current: 65, average: 55, total: 16 };
+            storageBase = { used: 400, total: 500, available: 100 };
+            networkBase = { current: 55, total: 700, bandwidth: 200 };
+        }
+
+        // Intercambio: storage % se convierte en memory, memory % se convierte en storage
+        const storageUsagePercent = Math.floor(
+          (storageBase.used / storageBase.total) * 100
+        );
+
+        const updatedMetrics: Partial<ServerMetrics> = {
+          cpu: {
+            // CPU con fluctuación mínima (±2)
+            current: Math.max(
+              0,
+              Math.min(100, cpuBase.current + Math.floor(Math.random() * 4) - 2)
+            ),
+            average: cpuBase.average,
+            critical: cpuBase.critical,
+            history: [
+              ...currentMetrics.cpu.history.slice(1),
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  cpuBase.current + Math.floor(Math.random() * 4) - 2
+                )
+              ),
+            ],
+          },
+          memory: {
+            // Memory sin fluctuación - valor fijo basado en storage %
+            current: storageUsagePercent,
+            average: storageUsagePercent,
+            total: currentMetrics.memory.total,
+            history: [
+              ...currentMetrics.memory.history.slice(1),
+              storageUsagePercent,
+            ],
+          },
+          network: {
+            current: Math.max(
+              0,
+              Math.min(
+                100,
+                networkBase.current + Math.floor(Math.random() * 20) - 10
+              )
+            ),
+            total: currentMetrics.network.total,
+            bandwidth: currentMetrics.network.bandwidth,
+            history: [
+              ...currentMetrics.network.history.slice(1),
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  networkBase.current + Math.floor(Math.random() * 20) - 10
+                )
+              ),
+            ],
+          },
+          storage: {
+            // Storage usa memory % como base
+            used: Math.floor(
+              (memoryBase.current / 100) * currentMetrics.storage.total
+            ),
+            total: currentMetrics.storage.total,
+            available:
+              currentMetrics.storage.total -
+              Math.floor(
+                (memoryBase.current / 100) * currentMetrics.storage.total
+              ),
+            history: [
+              ...currentMetrics.storage.history.slice(1),
+              memoryBase.current,
+            ],
+          },
+          lastUpdate: new Date().toISOString(),
+        };
+
+        get().updateServerMetrics(updatedMetrics);
       },
       addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => {
         const currentState = get();

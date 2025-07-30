@@ -36,12 +36,15 @@ export function UserDashboard() {
   const {
     selectedServer,
     updateServerMetrics,
+    updateServerMetricsSmooth,
     addServerEvent,
     deleteServerEvent,
   } = useServersStore();
   const [isServerRunning, setIsServerRunning] = useState(true);
   const [isRestarting, setIsRestarting] = useState(false);
   const [isOperationInProgress, setIsOperationInProgress] = useState(false);
+  const [isServerStopping, setIsServerStopping] = useState(false);
+  const [isServerStarting, setIsServerStarting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState<{
     isOpen: boolean;
     eventId: string | null;
@@ -51,6 +54,7 @@ export function UserDashboard() {
     eventId: null,
     eventDescription: "",
   });
+  const [confirmServerStop, setConfirmServerStop] = useState(false);
 
   const recentEvents = selectedServer
     ? selectedServer.events.slice(-5).reverse()
@@ -76,6 +80,20 @@ export function UserDashboard() {
       eventId: null,
       eventDescription: "",
     });
+  };
+
+  const handleStopServerRequest = () => {
+    if (!selectedServer || isOperationInProgress) return;
+    setConfirmServerStop(true);
+  };
+
+  const closeServerStopDialog = () => {
+    setConfirmServerStop(false);
+  };
+
+  const confirmStopServer = () => {
+    setConfirmServerStop(false);
+    handleStopServer();
   };
 
   const getEventIcon = (type: string) => {
@@ -108,122 +126,185 @@ export function UserDashboard() {
     }
   };
 
-
   useEffect(() => {
     if (!selectedServer || !isServerRunning) return;
 
     const interval = setInterval(() => {
-      updateServerMetrics({
-        cpu: {
-          current: Math.floor(Math.random() * 100),
-          average: Math.floor(Math.random() * 80),
-          critical: Math.floor(Math.random() * 10),
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        memory: {
-          current: Math.floor(Math.random() * 100),
-          average: Math.floor(Math.random() * 80),
-          total: selectedServer.metrics.memory.total,
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        network: {
-          current: Math.floor(Math.random() * 100),
-          total: selectedServer.metrics.network.total,
-          bandwidth: selectedServer.metrics.network.bandwidth,
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        storage: {
-          used: Math.floor(
-            Math.random() * selectedServer.metrics.storage.total
-          ),
-          total: selectedServer.metrics.storage.total,
-          available: Math.floor(
-            Math.random() * selectedServer.metrics.storage.total
-          ),
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        lastUpdate: new Date().toISOString(),
-      });
+      // Usar la nueva función suave que respeta las configuraciones de fluctuación
+      updateServerMetricsSmooth();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [selectedServer, updateServerMetrics, isServerRunning]);
+  }, [selectedServer, updateServerMetricsSmooth, isServerRunning]);
 
   const handleStopServer = () => {
     if (!selectedServer || isOperationInProgress) return;
     setIsOperationInProgress(true);
-    setIsServerRunning(false);
-    updateServerMetrics({
-      status: "offline",
-      cpu: { current: 0, average: 0, critical: 0, history: [] },
-      memory: {
-        current: 0,
-        average: 0,
-        total: selectedServer.metrics.memory.total,
-        history: [],
-      },
-      network: {
-        current: 0,
-        total: selectedServer.metrics.network.total,
-        bandwidth: 0,
-        history: [],
-      },
-      storage: {
-        used: 0,
-        total: selectedServer.metrics.storage.total,
-        available: 0,
-        history: [],
-      },
-    });
+    setIsServerStopping(true);
 
-
+    // Fase 1: Inicio del proceso de parada
     try {
       addServerEvent({
         type: "stop",
-        description: "Servidor detenido manualmente",
-        status: "success",
+        description: "Iniciando proceso de detención del servidor...",
+        status: "warning",
       });
     } catch (error) {
       console.error("Error al agregar evento:", error);
     }
 
-
+    // Fase 2: Cerrando servicios (después de 3 segundos)
     setTimeout(() => {
+      try {
+        addServerEvent({
+          type: "maintenance",
+          description: "Cerrando servicios y aplicaciones activas...",
+          status: "warning",
+        });
+      } catch (error) {
+        console.error("Error al agregar evento:", error);
+      }
+
+      updateServerMetrics({
+        status: "warning",
+        cpu: {
+          current: Math.floor(selectedServer.metrics.cpu.current * 0.3),
+          average: selectedServer.metrics.cpu.average,
+          critical: selectedServer.metrics.cpu.critical,
+          history: selectedServer.metrics.cpu.history,
+        },
+      });
+    }, 3000);
+
+    // Fase 3: Detención de procesos (después de 6 segundos)
+    setTimeout(() => {
+      try {
+        addServerEvent({
+          type: "maintenance",
+          description: "Deteniendo procesos del sistema...",
+          status: "warning",
+        });
+      } catch (error) {
+        console.error("Error al agregar evento:", error);
+      }
+
+      updateServerMetrics({
+        cpu: {
+          current: Math.floor(selectedServer.metrics.cpu.current * 0.1),
+          average: selectedServer.metrics.cpu.average,
+          critical: selectedServer.metrics.cpu.critical,
+          history: selectedServer.metrics.cpu.history,
+        },
+      });
+    }, 6000);
+
+    // Fase 4: Servidor completamente detenido (después de 10 segundos)
+    setTimeout(() => {
+      setIsServerRunning(false);
+      updateServerMetrics({
+        status: "offline",
+        cpu: { current: 0, average: 0, critical: 0, history: [] },
+        memory: {
+          current: 0,
+          average: 0,
+          total: selectedServer.metrics.memory.total,
+          history: [],
+        },
+        network: {
+          current: 0,
+          total: selectedServer.metrics.network.total,
+          bandwidth: 0,
+          history: [],
+        },
+        storage: {
+          used: 0,
+          total: selectedServer.metrics.storage.total,
+          available: 0,
+          history: [],
+        },
+      });
+
+      try {
+        addServerEvent({
+          type: "stop",
+          description: "Servidor detenido exitosamente",
+          status: "success",
+        });
+      } catch (error) {
+        console.error("Error al agregar evento:", error);
+      }
+
+      setIsServerStopping(false);
       setIsOperationInProgress(false);
-    }, 1000);
+    }, 10000); // 10 segundos total
   };
 
   const handleStartServer = () => {
     if (!selectedServer || isOperationInProgress) return;
     setIsOperationInProgress(true);
-    setIsServerRunning(true);
-    updateServerMetrics({
-      status: "online",
-    });
+    setIsServerStarting(true);
 
-
+    // Fase 1: Inicio del proceso de arranque
     try {
       addServerEvent({
         type: "start",
-        description: "Servidor iniciado manualmente",
-        status: "success",
+        description: "Iniciando proceso de arranque del servidor...",
+        status: "warning",
       });
     } catch (error) {
       console.error("Error al agregar evento:", error);
     }
 
+    updateServerMetrics({
+      status: "warning",
+    });
 
+    // Fase 2: Cargando sistema (después de 2 segundos)
     setTimeout(() => {
+      try {
+        addServerEvent({
+          type: "maintenance",
+          description: "Cargando sistema operativo y servicios básicos...",
+          status: "warning",
+        });
+      } catch (error) {
+        console.error("Error al agregar evento:", error);
+      }
+    }, 2000);
+
+    // Fase 3: Iniciando servicios (después de 5 segundos)
+    setTimeout(() => {
+      try {
+        addServerEvent({
+          type: "maintenance",
+          description: "Iniciando servicios y aplicaciones...",
+          status: "warning",
+        });
+      } catch (error) {
+        console.error("Error al agregar evento:", error);
+      }
+    }, 5000);
+
+    // Fase 4: Servidor completamente iniciado (después de 8 segundos)
+    setTimeout(() => {
+      setIsServerRunning(true);
+      updateServerMetrics({
+        status: "online",
+      });
+
+      try {
+        addServerEvent({
+          type: "start",
+          description: "Servidor iniciado exitosamente y operativo",
+          status: "success",
+        });
+      } catch (error) {
+        console.error("Error al agregar evento:", error);
+      }
+
+      setIsServerStarting(false);
       setIsOperationInProgress(false);
-    }, 1000);
+    }, 8000); // 8 segundos total
   };
 
   const handleRestartServer = async () => {
@@ -231,7 +312,6 @@ export function UserDashboard() {
     setIsOperationInProgress(true);
     setIsRestarting(true);
     setIsServerRunning(false);
-
 
     try {
       addServerEvent({
@@ -243,14 +323,12 @@ export function UserDashboard() {
       console.error("Error al agregar evento:", error);
     }
 
-
     setTimeout(() => {
       setIsServerRunning(true);
       setIsRestarting(false);
       updateServerMetrics({
         status: "online",
       });
-
 
       try {
         addServerEvent({
@@ -262,11 +340,10 @@ export function UserDashboard() {
         console.error("Error al agregar evento:", error);
       }
 
-
       setTimeout(() => {
         setIsOperationInProgress(false);
       }, 500);
-    }, 3000); 
+    }, 3000);
   };
 
   const getStatusColor = (status: string) => {
@@ -306,7 +383,6 @@ export function UserDashboard() {
     <div className="w-full max-w-7xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold">Panel de Monitoreo</h1>
 
-
       {selectedServer ? (
         <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
           <CardHeader>
@@ -332,22 +408,40 @@ export function UserDashboard() {
                 >
                   {getStatusText(selectedServer.metrics.status)}
                 </Badge>
-                {isOperationInProgress && (
-                  <Badge variant="secondary" className="text-xs">
-                    Operación en progreso...
+                {isServerStopping && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-red-100 text-red-800"
+                  >
+                    Deteniendo servidor...
                   </Badge>
                 )}
+                {isServerStarting && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs bg-green-100 text-green-800"
+                  >
+                    Iniciando servidor...
+                  </Badge>
+                )}
+                {isOperationInProgress &&
+                  !isServerStopping &&
+                  !isServerStarting && (
+                    <Badge variant="secondary" className="text-xs">
+                      Operación en progreso...
+                    </Badge>
+                  )}
                 <div className="flex gap-2">
                   {isServerRunning ? (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={handleStopServer}
+                      onClick={handleStopServerRequest}
                       disabled={isRestarting || isOperationInProgress}
                       className="text-red-600 border-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <PowerOff className="h-4 w-4 mr-1" />
-                      Detener
+                      {isServerStopping ? "Deteniendo..." : "Detener"}
                     </Button>
                   ) : (
                     <Button
@@ -358,7 +452,7 @@ export function UserDashboard() {
                       className="text-green-600 border-green-600 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <Power className="h-4 w-4 mr-1" />
-                      Iniciar
+                      {isServerStarting ? "Iniciando..." : "Iniciar"}
                     </Button>
                   )}
                   <Button
@@ -890,6 +984,14 @@ export function UserDashboard() {
         onConfirm={confirmDeleteEvent}
         title="Confirmar eliminación"
         description={`¿Estás seguro de que quieres eliminar el evento "${confirmDelete.eventDescription}"? Esta acción no se puede deshacer.`}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmServerStop}
+        onClose={closeServerStopDialog}
+        onConfirm={confirmStopServer}
+        title="⚠️ Detener Servidor"
+        description="¿Estás seguro de que deseas detener el servidor? Este proceso puede tardar varios minutos en completarse y afectará todos los servicios activos. El servidor dejará de responder durante el proceso de detención."
       />
     </div>
   );
