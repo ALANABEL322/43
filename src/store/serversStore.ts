@@ -125,6 +125,13 @@ interface ServersState {
   deleteServerEvent: (eventId: string) => void;
   deleteUserCreatedServer: (serverId: string) => void;
   restartUserServer: (serverId: string) => void;
+  createServerFromGrid: (gridServer: {
+    instance: string;
+    vcpu: string;
+    ram: string;
+    storage: string;
+    payPerUse: string;
+  }) => string;
 }
 
 export const useServersStore = create<ServersState>()(
@@ -1214,6 +1221,183 @@ export const useServersStore = create<ServersState>()(
             },
           });
         }
+      },
+
+      createServerFromGrid: (gridServer: {
+        instance: string;
+        vcpu: string;
+        ram: string;
+        storage: string;
+        payPerUse: string;
+      }) => {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        const newServerId = `grid-server-${timestamp}-${random}`;
+
+        // Generar IP única
+        const generateUniqueIP = () => {
+          const { userCreatedServers } = get();
+          let newIP: string;
+          let attempts = 0;
+
+          do {
+            const lastThreeNumbers = Math.floor(Math.random() * 254) + 1;
+            newIP = `192.168.1.${lastThreeNumbers}`;
+            attempts++;
+          } while (
+            userCreatedServers.some((server) => server.ipAddress === newIP) &&
+            attempts < 100
+          );
+
+          return newIP;
+        };
+
+        const serverIP = generateUniqueIP();
+
+        // Crear servidor base mockado basado en las especificaciones de la grilla
+        const baseServer: PredefinedServer = {
+          id: `grid-${gridServer.instance.toLowerCase().replace(/\s+/g, "-")}`,
+          name: `Servidor ${gridServer.instance}`,
+          description: `Servidor de alta performance con ${gridServer.vcpu} vCPUs, ${gridServer.ram} de RAM y ${gridServer.storage} de almacenamiento`,
+          specifications: [
+            `${gridServer.vcpu} vCPUs`,
+            `${gridServer.ram} RAM`,
+            `${gridServer.storage} Almacenamiento`,
+            "Red de alta velocidad",
+            "Monitoreo 24/7",
+          ],
+          price: parseFloat(
+            gridServer.payPerUse.replace(/[$,]/g, "").split("/")[0]
+          ),
+          features: [
+            `${gridServer.vcpu} núcleos de CPU de alto rendimiento`,
+            `${gridServer.ram} de memoria RAM DDR4`,
+            `${gridServer.storage} de almacenamiento SSD NVMe`,
+            "Ancho de banda ilimitado",
+            "Panel de control avanzado",
+            "Backup automático diario",
+            "Soporte técnico 24/7",
+            "Certificaciones de seguridad",
+          ],
+          recommendedFor: [
+            "Aplicaciones empresariales",
+            "Bases de datos",
+            "Desarrollo y testing",
+            "Hosting web",
+            "Análisis de datos",
+          ],
+        };
+
+        // Generar métricas coherentes basadas en las especificaciones
+        const generateGridMetrics = (): ServerMetrics => {
+          const cpuCores = parseInt(gridServer.vcpu);
+          const ramGB = parseInt(gridServer.ram.replace(/[^\d]/g, ""));
+          const storageGB = parseInt(gridServer.storage.replace(/[^\d]/g, ""));
+
+          // Métricas base más realistas según las especificaciones
+          const baseCpuUsage = Math.max(5, Math.min(25, cpuCores * 2)); // Uso base proporcional
+          const baseMemoryUsage = Math.max(10, Math.min(40, ramGB * 0.3)); // 30% base aprox
+          const baseStorageUsed = storageGB * 0.05; // Exactamente 5% del almacenamiento total
+
+          return {
+            cpu: {
+              current: baseCpuUsage + Math.random() * 10,
+              average: baseCpuUsage,
+              critical: 85,
+              history: Array.from({ length: 24 }, () =>
+                Math.max(0, baseCpuUsage + (Math.random() - 0.5) * 20)
+              ),
+            },
+            memory: {
+              current: baseMemoryUsage + Math.random() * 15,
+              average: baseMemoryUsage,
+              total: ramGB * 1024, // En MB
+              history: Array.from({ length: 24 }, () =>
+                Math.max(0, baseMemoryUsage + (Math.random() - 0.5) * 25)
+              ),
+            },
+            network: {
+              current: Math.random() * 100 + 50,
+              total: 1000, // 1Gbps
+              bandwidth: 1000,
+              history: Array.from(
+                { length: 24 },
+                () => Math.random() * 150 + 25
+              ),
+            },
+            storage: {
+              used: baseStorageUsed, // 5% del almacenamiento total
+              total: storageGB, // Almacenamiento total del servidor
+              available: storageGB - baseStorageUsed, // 95% disponible
+              history: Array.from({ length: 24 }, () =>
+                // Mantener el historial cerca del 5% con pequeñas variaciones
+                Math.max(
+                  storageGB * 0.03,
+                  Math.min(
+                    storageGB * 0.08,
+                    baseStorageUsed + (Math.random() - 0.5) * 2
+                  )
+                )
+              ),
+            },
+            status: "online" as const,
+            uptime: Math.floor(Math.random() * 30 + 1), // 1-30 días
+            lastUpdate: new Date().toISOString(),
+          };
+        };
+
+        const initialEvents: ServerEvent[] = [
+          {
+            id: `event-${timestamp}-1`,
+            type: "start",
+            description: `Servidor ${gridServer.instance} creado y configurado correctamente`,
+            timestamp: new Date().toISOString(),
+            status: "success",
+          },
+          {
+            id: `event-${timestamp}-2`,
+            type: "update",
+            description: `Configuración inicial: ${gridServer.vcpu} vCPUs, ${gridServer.ram} RAM, ${gridServer.storage} almacenamiento`,
+            timestamp: new Date(Date.now() - 1000).toISOString(),
+            status: "success",
+          },
+          {
+            id: `event-${timestamp}-3`,
+            type: "start",
+            description: "Sistema operativo instalado y optimizado",
+            timestamp: new Date(Date.now() - 2000).toISOString(),
+            status: "success",
+          },
+        ];
+
+        const newUserServer: UserCreatedServer = {
+          id: newServerId,
+          name: `Servidor ${gridServer.instance}`,
+          description: `${gridServer.instance}`,
+          createdFromSpecs: [
+            `${gridServer.vcpu}-vcpus`,
+            `${gridServer.ram}-ram`,
+            `${gridServer.storage}-storage`,
+          ],
+          createdFromSubSpecs: [],
+          additionalNotes: `Creado desde grilla de catálogo. Precio: ${gridServer.payPerUse}`,
+          baseServer: baseServer,
+          metrics: generateGridMetrics(),
+          isActive: true,
+          isRunning: true, // Los servidores de la grilla inician activos
+          createdDate: new Date().toISOString(),
+          events: initialEvents,
+          ipAddress: serverIP,
+        };
+
+        set((state) => ({
+          userCreatedServers: [...state.userCreatedServers, newUserServer],
+        }));
+
+        console.log(
+          `Servidor de grilla creado: ${newServerId} (${gridServer.instance}) con IP: ${serverIP}`
+        );
+        return newServerId;
       },
     }),
     {

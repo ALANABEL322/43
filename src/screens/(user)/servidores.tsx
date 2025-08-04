@@ -25,6 +25,7 @@ import {
   Shield,
   Zap,
   CheckCircle,
+  Brain,
 } from "lucide-react";
 import { useServersStore } from "@/store/serversStore";
 import { paths } from "@/routes/paths";
@@ -37,6 +38,7 @@ export default function Servidores() {
     predefinedServers,
     getRecommendedServers,
     createUserServer,
+    createServerFromGrid,
   } = useServersStore();
 
   const [selectedSpecs, setSelectedSpecs] = useState<string[]>([]);
@@ -328,7 +330,7 @@ export default function Servidores() {
               </div>
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Procesando con Inteligencia Artificial
+              Agente Sofstratus AI en ejecución.
             </h1>
             <p className="text-gray-600 max-w-2xl mx-auto text-lg">
               Analizando tu configuración <strong>"{serverName}"</strong> para
@@ -490,38 +492,62 @@ export default function Servidores() {
           {recommendedServers.map((server, index) => (
             <Card
               key={server.id}
-              className="relative overflow-hidden hover:shadow-lg transition-shadow"
+              className={`relative overflow-hidden transition-all duration-300 hover:scale-105 ${
+                index === 0
+                  ? "border-2 border-purple-500 shadow-xl shadow-purple-200"
+                  : "border-2 border-purple-300 hover:border-purple-400 shadow-lg"
+              }`}
             >
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg">{server.name}</CardTitle>
+              {/* Header con icono de IA */}
+              <div className="relative bg-gradient-to-r from-purple-50 to-indigo-50 p-6 border-b border-purple-200">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg">
+                      <Brain className="h-5 w-5 text-white" />
+                    </div>
+                    <CardTitle className="text-lg text-gray-900">
+                      {server.name}
+                    </CardTitle>
+                  </div>
                   {server.matchPercentage > 0 && (
                     <Badge
                       variant="secondary"
-                      className="bg-blue-100 text-blue-800"
+                      className="bg-purple-100 text-purple-800 border-purple-300"
                     >
-                      {Math.round(server.matchPercentage)}% match
+                      {Math.round(server.matchPercentage)}% IA
                     </Badge>
                   )}
                 </div>
-                <p className="text-sm text-gray-600">{server.description}</p>
-                <p className="text-2xl font-bold text-green-600">
-                  ${server.price}/mes
+                <p className="text-sm text-gray-600 mb-3">
+                  {server.description}
                 </p>
-              </CardHeader>
-              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-2xl font-bold text-purple-600">
+                    ${server.price}/mes
+                  </p>
+                  {index === 0 && (
+                    <div className="flex items-center gap-1 bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold">
+                      <Brain className="h-3 w-3" />
+                      Mejor Match
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <CardContent className="p-6 space-y-4">
                 <div>
-                  <h4 className="font-medium mb-2">
+                  <h4 className="font-medium mb-3 text-gray-900 flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-yellow-500" />
                     Características incluidas:
                   </h4>
-                  <ul className="space-y-1">
+                  <ul className="space-y-2">
                     {server.features.map(
                       (feature: string, featureIndex: number) => (
                         <li
                           key={featureIndex}
-                          className="text-sm text-gray-600 flex items-center"
+                          className="text-sm text-gray-700 flex items-center"
                         >
-                          <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                          <span className="w-2 h-2 bg-purple-500 rounded-full mr-3 flex-shrink-0"></span>
                           {feature}
                         </li>
                       )
@@ -529,14 +555,17 @@ export default function Servidores() {
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium mb-2">Recomendado para:</h4>
-                  <div className="flex flex-wrap gap-1">
+                  <h4 className="font-medium mb-3 text-gray-900 flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-blue-500" />
+                    Recomendado para:
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
                     {server.recommendedFor.map(
                       (use: string, useIndex: number) => (
                         <Badge
                           key={useIndex}
                           variant="outline"
-                          className="text-xs"
+                          className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50"
                         >
                           {use}
                         </Badge>
@@ -545,25 +574,24 @@ export default function Servidores() {
                   </div>
                 </div>
               </CardContent>
-              <CardFooter>
+              <CardFooter className="p-6 pt-0">
                 <Button
-                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  className={`w-full ${
+                    index === 0
+                      ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                      : "bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-300"
+                  }`}
                   onClick={() => handleCreateServer(server)}
                   disabled={isCreating}
                 >
                   {isCreating ? "Creando..." : "Seleccionar este Servidor"}
                 </Button>
               </CardFooter>
-              {index === 0 && (
-                <div className="absolute top-0 right-0 bg-green-500 text-white px-2 py-1 text-xs font-bold">
-                  Mejor Match
-                </div>
-              )}
             </Card>
           ))}
         </div>
 
-        <div className="flex justify-center">
+        <div className="flex justify-center mb-12">
           <Button
             variant="outline"
             onClick={handleBackToConfiguration}
@@ -571,6 +599,231 @@ export default function Servidores() {
           >
             ← Volver a Configuración
           </Button>
+        </div>
+
+        {/* Catálogo Amplio de Servidores */}
+        <div className="border-t border-gray-200 pt-12">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Catálogo Completo de Servidores
+            </h2>
+            <p className="text-gray-600">
+              Explora todas nuestras opciones de servidores con diferentes
+              configuraciones y planes de pago
+            </p>
+          </div>
+
+          {/* Tabla de Servidores */}
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50 border-b border-gray-200">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      Instancia
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      vCPU
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      RAM
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      Almacenamiento
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      Pago por uso
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      Plan 1 año
+                    </th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">
+                      Al contado
+                    </th>
+                    <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">
+                      Acción
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {[
+                    {
+                      instance: "D2as v4",
+                      vcpu: "2",
+                      ram: "8 GiB",
+                      storage: "16 GiB",
+                      payPerUse: "$82.4900/mes",
+                      yearPlan: "$60.4659/mes",
+                      yearSaving: "-26% saving",
+                      upfront: "$23.2023/mes",
+                      upfrontSaving: "-71% saving",
+                    },
+                    {
+                      instance: "D4as v4",
+                      vcpu: "4",
+                      ram: "16 GiB",
+                      storage: "32 GiB",
+                      payPerUse: "$162.7900/mes",
+                      yearPlan: "$118.7345/mes",
+                      yearSaving: "-27% saving",
+                      upfront: "$44.2146/mes",
+                      upfrontSaving: "-72% saving",
+                    },
+                    {
+                      instance: "D8as v4",
+                      vcpu: "8",
+                      ram: "32 GiB",
+                      storage: "64 GiB",
+                      payPerUse: "$318.2800/mes",
+                      yearPlan: "$230.1763/mes",
+                      yearSaving: "-27% saving",
+                      upfront: "$82.1293/mes",
+                      upfrontSaving: "-74% saving",
+                    },
+                    {
+                      instance: "D16as v4",
+                      vcpu: "16",
+                      ram: "64 GiB",
+                      storage: "128 GiB",
+                      payPerUse: "$627.8000/mes",
+                      yearPlan: "$451.5926/mes",
+                      yearSaving: "-29% saving",
+                      upfront: "$153.4986/mes",
+                      upfrontSaving: "-75% saving",
+                    },
+                    {
+                      instance: "D32as v4",
+                      vcpu: "32",
+                      ram: "128 GiB",
+                      storage: "256 GiB",
+                      payPerUse: "$1,255.6000/mes",
+                      yearPlan: "$903.1852/mes",
+                      yearSaving: "-28% saving",
+                      upfront: "$306.9972/mes",
+                      upfrontSaving: "-76% saving",
+                    },
+                    {
+                      instance: "D48as v4",
+                      vcpu: "48",
+                      ram: "192 GiB",
+                      storage: "384 GiB",
+                      payPerUse: "$1,883.4000/mes",
+                      yearPlan: "$1,354.7778/mes",
+                      yearSaving: "-28% saving",
+                      upfront: "$460.4958/mes",
+                      upfrontSaving: "-76% saving",
+                    },
+                  ].map((server, index) => (
+                    <tr
+                      key={index}
+                      className="hover:bg-gray-50 transition-colors"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="font-medium text-gray-900">
+                          {server.instance}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {/* <Cpu className="h-4 w-4 text-blue-500" /> */}
+                          <span className="text-gray-900 font-medium">
+                            {server.vcpu}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-gray-900 font-medium">
+                          {server.ram}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-2">
+                          {/* <HardDrive className="h-4 w-4 text-green-500" /> */}
+                          <span className="text-gray-900 font-medium">
+                            {server.storage}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-gray-900 font-semibold">
+                          {server.payPerUse}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <div className="text-gray-900 font-semibold">
+                            {server.yearPlan}
+                          </div>
+                          <div className="text-xs text-green-600 font-medium">
+                            {server.yearSaving}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="space-y-1">
+                          <div className="text-gray-900 font-semibold">
+                            {server.upfront}
+                          </div>
+                          <div className="text-xs text-green-600 font-medium">
+                            {server.upfrontSaving}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <Button
+                          size="sm"
+                          className="bg-blue-100 hover:bg-blue-200 text-blue-700 border-blue-300 p-2"
+                          onClick={() => {
+                            try {
+                              const serverId = createServerFromGrid({
+                                instance: server.instance,
+                                vcpu: server.vcpu,
+                                ram: server.ram,
+                                storage: server.storage,
+                                payPerUse: server.payPerUse,
+                              });
+                              console.log(
+                                "Servidor creado desde grilla:",
+                                serverId
+                              );
+                              // Redirigir a mis servidores
+                              navigate(paths.user.misServidores);
+                            } catch (error) {
+                              console.error(
+                                "Error creando servidor desde grilla:",
+                                error
+                              );
+                            }
+                          }}
+                          title="Crear servidor"
+                        >
+                          <Plus className="h-4 w-4 " />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Nota informativa */}
+          <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="flex items-start gap-3">
+              <Info className="h-5 w-5 text-blue-500 mt-0.5 flex-shrink-0" />
+              <div>
+                <h4 className="text-sm font-medium text-blue-900 mb-1">
+                  Información sobre precios
+                </h4>
+                <p className="text-sm text-blue-700">
+                  Los precios mostrados son estimados y pueden variar según la
+                  región y disponibilidad. Los planes de ahorro requieren
+                  compromiso de uso y el pago al contado ofrece los mejores
+                  descuentos.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );

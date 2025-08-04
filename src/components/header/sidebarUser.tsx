@@ -29,7 +29,25 @@ export default function SidebarUser() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Limpiar localStorage
+    localStorage.clear();
+
+    // Limpiar sessionStorage
+    sessionStorage.clear();
+
+    // Limpiar cache del navegador (si es posible)
+    if ("caches" in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
+          caches.delete(name);
+        });
+      });
+    }
+
+    // Ejecutar logout del store
     logout();
+
+    // Navegar al login
     navigate(paths.auth.login);
   };
 
