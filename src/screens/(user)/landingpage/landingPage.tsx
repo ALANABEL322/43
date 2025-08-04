@@ -1,12 +1,19 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowUpRight } from "lucide-react";
 import LandingSection from "./landingSection";
 import rectangulo from "../../../assets/Rectangle 1.png";
+import { paths } from "@/routes/paths";
 
 export default function LandingPage() {
   const [_activeTab, _setActiveTab] = useState("overview");
+  const navigate = useNavigate();
+
+  const handleComenzar = () => {
+    navigate(paths.auth.login);
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-emerald-50 to-white">
@@ -27,6 +34,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   className="bg-emerald-500 hover:bg-emerald-600"
+                  onClick={handleComenzar}
                 >
                   Comenzar
                 </Button>

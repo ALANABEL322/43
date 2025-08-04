@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Card,
   CardContent,
@@ -7,13 +8,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, Server } from "lucide-react";
-import { useMobile } from "@/hooks/use-mobile";
-import imgServer from "@/assets/servidorIMG.png";
+import { Badge } from "@/components/ui/badge";
 import {
-  ChartContainer,
-  ChartTooltip,
-} from "@/components/ui/chart";
+  ChevronLeft,
+  ChevronRight,
+  Server,
+  Plus,
+  Power,
+  PowerOff,
+  Eye,
+  Trash2,
+} from "lucide-react";
+import { useMobile } from "@/hooks/use-mobile";
+import { useServersStore } from "@/store/serversStore";
+import { paths } from "@/routes/paths";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { cn } from "@/lib/utils";
+import imgServer from "@/assets/server-1024x506.jpg";
+import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
 import {
   Area,
   AreaChart,
@@ -77,51 +89,27 @@ const chartConfig = {
 };
 
 export function Inicio() {
+  const navigate = useNavigate();
   const isMobile = useMobile();
-  const [currentServerPage, setCurrentServerPage] = useState(0);
+  const {
+    userCreatedServers,
+    selectUserCreatedServer,
+    updateUserServerStatus,
+    deleteUserCreatedServer,
+  } = useServersStore();
 
-  const servers = [
-    {
-      id: 1,
-      name: "Servidor Principal",
-      subtitle: "Servidor de producción",
-      status: "online",
-      image: { imgServer },
-      title: "Servidor de Aplicaciones",
-      description:
-        "Servidor principal que maneja las aplicaciones críticas del negocio.",
-    },
-    {
-      id: 2,
-      name: "Servidor de Base de Datos",
-      subtitle: "Alta disponibilidad",
-      status: "offline",
-      image: { imgServer },
-      title: "Base de Datos Principal",
-      description:
-        "Servidor dedicado para el manejo de bases de datos con replicación.",
-    },
-    {
-      id: 3,
-      name: "Servidor de Desarrollo",
-      subtitle: "Ambiente de pruebas",
-      status: "online",
-      image: { imgServer },
-      title: "Desarrollo y QA",
-      description:
-        "Servidor para pruebas y desarrollo de nuevas características.",
-    },
-    {
-      id: 4,
-      name: "Servidor de Respaldo",
-      subtitle: "Backup y recuperación",
-      status: "online",
-      image: { imgServer },
-      title: "Sistema de Respaldo",
-      description:
-        "Servidor dedicado para copias de seguridad y recuperación de desastres.",
-    },
-  ];
+  const [currentServerPage, setCurrentServerPage] = useState(0);
+  const [confirmDelete, setConfirmDelete] = useState<{
+    isOpen: boolean;
+    serverId: string | null;
+    serverName: string;
+  }>({
+    isOpen: false,
+    serverId: null,
+    serverName: "",
+  });
+
+  const servers = userCreatedServers;
 
   const serversPerPage = isMobile ? 1 : 3;
   const totalPages = Math.ceil(servers.length / serversPerPage);
@@ -136,6 +124,50 @@ export function Inicio() {
 
   const prevPage = () => {
     setCurrentServerPage((prev) => (prev - 1 + totalPages) % totalPages);
+  };
+
+  const handleServerToggle = (serverId: string, currentStatus: boolean) => {
+    updateUserServerStatus(serverId, !currentStatus);
+  };
+
+  const handleViewServer = (serverId: string) => {
+    selectUserCreatedServer(serverId);
+    navigate(paths.user.dashboard);
+  };
+
+  const handleDeleteRequest = (serverId: string, serverName: string) => {
+    setConfirmDelete({
+      isOpen: true,
+      serverId,
+      serverName,
+    });
+  };
+
+  const confirmDeleteServer = () => {
+    if (confirmDelete.serverId) {
+      deleteUserCreatedServer(confirmDelete.serverId);
+    }
+    setConfirmDelete({
+      isOpen: false,
+      serverId: null,
+      serverName: "",
+    });
+  };
+
+  const closeConfirmDialog = () => {
+    setConfirmDelete({
+      isOpen: false,
+      serverId: null,
+      serverName: "",
+    });
+  };
+
+  const getStatusColor = (isRunning: boolean) => {
+    return isRunning ? "text-emerald-500" : "text-red-500";
+  };
+
+  const getStatusText = (isRunning: boolean) => {
+    return isRunning ? "En línea" : "Desconectado";
   };
 
   return (
@@ -378,65 +410,174 @@ export function Inicio() {
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Mis servidores</h2>
           <div className="flex gap-2">
+            {servers.length > 0 && (
+              <>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={prevPage}
+                  aria-label="Página anterior"
+                  disabled={totalPages <= 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={nextPage}
+                  aria-label="Página siguiente"
+                  disabled={totalPages <= 1}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </>
+            )}
             <Button
-              variant="outline"
-              size="icon"
-              onClick={prevPage}
-              aria-label="Página anterior"
+              onClick={() => navigate(paths.user.servidores)}
+              className="bg-blue-600 hover:bg-blue-700"
             >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={nextPage}
-              aria-label="Página siguiente"
-            >
-              <ChevronRight className="h-4 w-4" />
+              <Plus className="h-4 w-4 mr-2" />
+              Crear Servidor
             </Button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {visibleServers.map((server) => (
-            <Card key={server.id} className="overflow-hidden">
-              <CardHeader className="p-4 pb-0">
-                <div className="flex items-start gap-2">
-                  <Server
-                    className={`h-5 w-5 ${
-                      server.status === "online"
-                        ? "text-emerald-500"
-                        : "text-red-500"
-                    }`}
-                  />
-                  <div>
-                    <h3 className="font-medium">{server.name}</h3>
-                    <p className="text-xs text-gray-500">{server.subtitle}</p>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="relative h-40 overflow-hidden">
-                  <img
-                    src={server.image.imgServer}
-                    alt="Rack de servidores"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  <h4 className="font-medium mb-1">{server.title}</h4>
-                  <p className="text-sm text-gray-600">{server.description}</p>
-                </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button className="w-full bg-emerald-500 hover:bg-emerald-600">
-                  Ver detalles
+        {servers.length === 0 ? (
+          <Card className="bg-gray-50 border-dashed border-2">
+            <CardContent className="pt-6 pb-6">
+              <div className="text-center">
+                <Server className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                  No tienes servidores creados
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  Crea tu primer servidor personalizado para comenzar a
+                  monitorear tu infraestructura
+                </p>
+                <Button
+                  onClick={() => navigate(paths.user.servidores)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Crear Mi Primer Servidor
                 </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {visibleServers.map((server) => (
+              <Card key={server.id} className="overflow-hidden">
+                <CardHeader className="p-4 pb-0">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-2">
+                      <Server
+                        className={cn(
+                          "h-5 w-5",
+                          getStatusColor(server.isRunning)
+                        )}
+                      />
+                      <div>
+                        <h3 className="font-medium">{server.name}</h3>
+                        <p className="text-xs text-gray-500">
+                          {server.baseServer.name}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          "text-xs",
+                          server.isRunning
+                            ? "bg-emerald-100 text-emerald-800"
+                            : "bg-red-100 text-red-800"
+                        )}
+                      >
+                        {getStatusText(server.isRunning)}
+                      </Badge>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 text-red-500 hover:text-red-700 hover:bg-red-50"
+                        onClick={() =>
+                          handleDeleteRequest(server.id, server.name)
+                        }
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <div className="relative h-40 overflow-hidden">
+                    <img
+                      src={imgServer}
+                      alt="Rack de servidores"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-medium mb-1">{server.description}</h4>
+                    <p className="text-sm text-gray-600">
+                      Creado:{" "}
+                      {new Date(server.createdDate).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Precio: ${server.baseServer.price}/mes
+                    </p>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0">
+                  <div className="flex gap-2 w-full">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        handleServerToggle(server.id, server.isRunning)
+                      }
+                      className={cn(
+                        "flex-1",
+                        server.isRunning
+                          ? "text-red-600 border-red-600 hover:bg-red-50"
+                          : "text-green-600 border-green-600 hover:bg-green-50"
+                      )}
+                    >
+                      {server.isRunning ? (
+                        <>
+                          <PowerOff className="h-4 w-4 mr-1" />
+                          Detener
+                        </>
+                      ) : (
+                        <>
+                          <Power className="h-4 w-4 mr-1" />
+                          Iniciar
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => handleViewServer(server.id)}
+                      className="flex-1 bg-emerald-500 hover:bg-emerald-600"
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Ver Dashboard
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
+
+      <ConfirmDialog
+        isOpen={confirmDelete.isOpen}
+        onClose={closeConfirmDialog}
+        onConfirm={confirmDeleteServer}
+        title="Eliminar Servidor"
+        description={`¿Estás seguro de que quieres eliminar el servidor "${confirmDelete.serverName}"? Esta acción no se puede deshacer y perderás todos los datos y configuraciones asociadas.`}
+      />
     </div>
   );
 }

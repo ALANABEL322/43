@@ -20,7 +20,7 @@ import LandingPage from "@/screens/(user)/landingpage/landingPage";
 import { UserDashboard } from "@/screens/(user)/dashboard";
 import { UserSupportPage } from "@/screens/(user)/support";
 import ProtectedRoute from "./ProtectedRoute";
-import { Inicio } from "@/screens/(user)/inicio";
+import { MisServidores } from "@/screens/(user)/misServidores";
 import Perfil from "@/screens/(user)/perfil";
 import Servidores from "@/screens/(user)/servidores";
 import ServidoresProcesando from "@/screens/(user)/servidoresProcesando";
@@ -30,6 +30,12 @@ import Rendimiento from "@/screens/(user)/rendimiento";
 import Configuracion from "@/screens/(user)/configuracion";
 
 export const publicRoutes: RouteObject[] = [
+  // Landing page pública como ruta root
+  {
+    path: paths.root,
+    element: <LandingPage />,
+  },
+  // Rutas de autenticación
   {
     path: paths.auth.root,
     element: <AuthLayout />,
@@ -41,16 +47,6 @@ export const publicRoutes: RouteObject[] = [
       {
         path: "register",
         element: <RegisterForm />,
-      },
-    ],
-  },
-  {
-    path: paths.root,
-    element: <AuthLayout />,
-    children: [
-      {
-        index: true,
-        element: <LoginForm />,
       },
     ],
   },
@@ -98,21 +94,22 @@ export const userRoutes: RouteObject[] = [
       </ProtectedRoute>
     ),
     children: [
+      // Ruta por defecto después del login - redirige al dashboard
       {
-        path: paths.user.inicio,
-        element: <Inicio />,
-      },
-      {
-        path: paths.user.perfil,
-        element: <Perfil />,
-      },
-      {
-        path: paths.user.landingPage,
-        element: <LandingPage />,
+        index: true,
+        element: <UserDashboard />,
       },
       {
         path: paths.user.dashboard,
         element: <UserDashboard />,
+      },
+      {
+        path: paths.user.misServidores,
+        element: <MisServidores />,
+      },
+      {
+        path: paths.user.perfil,
+        element: <Perfil />,
       },
       {
         path: paths.user.support,

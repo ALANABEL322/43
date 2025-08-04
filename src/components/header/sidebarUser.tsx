@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Home,
-  Users,
   Server,
   AlertTriangle,
   LogOut,
@@ -55,11 +54,11 @@ export default function SidebarUser() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.landingPage)}
+                    onClick={() => navigate(paths.user.misServidores)}
                     className="w-full"
                   >
                     <LayoutDashboard className="h-4 w-4 text-white" />
-                    <span className="text-white">Inicio</span>
+                    <span className="text-white">Mis Servidores</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 
