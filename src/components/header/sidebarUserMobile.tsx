@@ -5,6 +5,7 @@ import {
   Server,
   AlertTriangle,
   BarChart3,
+  LayoutDashboard,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { paths } from "@/routes/paths";
@@ -21,11 +22,35 @@ export default function SidebarUserMobile({
   const { logout } = useAuthStore();
 
   const handleLogout = () => {
+    // Limpiar localStorage
+    localStorage.clear();
+
+    // Limpiar sessionStorage
+    sessionStorage.clear();
+
+    // Limpiar cache del navegador (si es posible)
+    if ("caches" in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
+          caches.delete(name);
+        });
+      });
+    }
+
+    // Ejecutar logout del store
     logout();
+
+    // Navegar al login
     navigate(paths.auth.login);
   };
 
   const menuItems = [
+    {
+      icon: LayoutDashboard,
+      path: paths.user.misServidores,
+      tooltip: "Mis Servidores",
+      color: "#3B82F6",
+    },
     {
       icon: BarChart3,
       path: paths.user.dashboard,

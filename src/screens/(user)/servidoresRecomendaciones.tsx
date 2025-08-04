@@ -166,33 +166,41 @@ export default function ServidoresRecomendaciones() {
         {recommendedServers.map((server, index) => (
           <Card
             key={server.id}
-            className={`relative hover:shadow-lg transition-all duration-300 ${
-              index === 0 ? "ring-2 ring-blue-500 scale-105" : "hover:scale-105"
+            className={`relative transition-all duration-300 hover:scale-105 ${
+              index === 0
+                ? "border-2 border-purple-500 shadow-xl shadow-purple-200 scale-105"
+                : "border-2 border-purple-300 hover:border-purple-400 shadow-lg"
             }`}
           >
-            {index === 0 && (
-              <div className="absolute -top-3 left-4 bg-gradient-to-r from-blue-500 to-purple-600 text-white px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                <Brain className="h-3 w-3" />
-                Mejor Opción IA
-              </div>
-            )}
-
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-3">
-                {getServerIcon(server.id)}
-                <div className="flex-1">
-                  <CardTitle className="text-xl">{server.name}</CardTitle>
-                  <Badge className="bg-green-100 text-green-800 mt-1">
-                    {Math.round(server.matchPercentage || 0)}% compatibilidad
-                  </Badge>
+            {/* Header con icono de IA */}
+            <div className="relative bg-gradient-to-r from-purple-50 to-indigo-50 p-6 border-b border-purple-200">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg">
+                    <Brain className="h-5 w-5 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <CardTitle className="text-xl text-gray-900">
+                      {server.name}
+                    </CardTitle>
+                    <Badge className="bg-purple-100 text-purple-800 border-purple-300 mt-1">
+                      {Math.round(server.matchPercentage || 0)}% IA
+                    </Badge>
+                  </div>
                 </div>
+                {index === 0 && (
+                  <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1">
+                    <Brain className="h-3 w-3" />
+                    Mejor Opción
+                  </div>
+                )}
               </div>
               <p className="text-gray-600 text-sm">
                 {getServerDescription(server.id)}
               </p>
-            </CardHeader>
+            </div>
 
-            <CardContent className="space-y-4">
+            <CardContent className="p-6 space-y-4">
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900 flex items-center gap-2">
                   <Zap className="h-4 w-4 text-yellow-500" />
@@ -204,7 +212,7 @@ export default function ServidoresRecomendaciones() {
                       key={featureIndex}
                       className="flex items-center space-x-2 text-sm"
                     >
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
+                      <Check className="h-4 w-4 text-purple-500 flex-shrink-0" />
                       <span className="text-gray-700">{feature}</span>
                     </li>
                   ))}
@@ -213,7 +221,7 @@ export default function ServidoresRecomendaciones() {
 
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-900 flex items-center gap-2">
-                  <Brain className="h-4 w-4 text-blue-500" />
+                  <Brain className="h-4 w-4 text-purple-500" />
                   Casos de Uso Ideales:
                 </h4>
                 <div className="flex flex-wrap gap-2">
@@ -221,7 +229,7 @@ export default function ServidoresRecomendaciones() {
                     <Badge
                       key={useCaseIndex}
                       variant="outline"
-                      className="text-xs"
+                      className="text-xs border-purple-200 text-purple-700 hover:bg-purple-50"
                     >
                       {useCase}
                     </Badge>
@@ -232,8 +240,11 @@ export default function ServidoresRecomendaciones() {
               <div className="pt-4">
                 <Button
                   onClick={() => handleSelectServer(server.id)}
-                  className="w-full"
-                  variant={index === 0 ? "default" : "outline"}
+                  className={`w-full ${
+                    index === 0
+                      ? "bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                      : "bg-purple-100 text-purple-700 hover:bg-purple-200 border-purple-300"
+                  }`}
                 >
                   {index === 0 ? "Implementar Recomendación" : "Ver Detalles"}
                 </Button>

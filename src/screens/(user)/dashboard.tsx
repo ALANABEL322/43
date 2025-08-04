@@ -550,17 +550,19 @@ export function UserDashboard() {
                   %
                 </p>
                 <p className="text-sm text-gray-600">Usado</p>
+                <p className="text-xs text-gray-500">
+                  {Math.round(selectedServer.metrics.storage.used)} GB
+                </p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">
-                  {Math.round(selectedServer.metrics.storage.available / 1024)}{" "}
-                  GB
+                  {Math.round(selectedServer.metrics.storage.available)} GB
                 </p>
                 <p className="text-sm text-gray-600">Disponible</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-purple-600">
-                  {Math.round(selectedServer.metrics.storage.total / 1024)} GB
+                  {Math.round(selectedServer.metrics.storage.total)} GB
                 </p>
                 <p className="text-sm text-gray-600">Total</p>
               </div>
@@ -598,7 +600,7 @@ export function UserDashboard() {
             </h3>
             <p className="text-sm text-gray-600">
               {selectedServer
-                ? `Servidor ${selectedServer.server.name} con ${selectedServer.server.features.length} características incluidas.`
+                ? `${selectedServer.server.name} con ${selectedServer.server.features.length} características incluidas.`
                 : "Crear un servidor conlleva una serie de gastos que es importante tener en cuenta desde el principio. En primer lugar, está el costo del hardware, que dependerá del tipo de servidor que se quiera montar. Una máquina básica puede incluir un procesador decente, al menos 16GB de RAM y un disco SSD, pero si se busca mayor rendimiento o tolerancia a fallos, será necesario invertir en componentes más robustos, como fuentes redundantes, almacenamiento RAID, o procesadores con múltiples núcleos."}
             </p>
           </CardContent>
