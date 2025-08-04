@@ -67,12 +67,29 @@ export interface ServerMetrics {
   lastUpdate: string;
 }
 
+export interface UserCreatedServer {
+  id: string;
+  name: string;
+  description: string;
+  createdFromSpecs: string[];
+  createdFromSubSpecs: string[];
+  additionalNotes: string;
+  baseServer: PredefinedServer;
+  metrics: ServerMetrics;
+  isActive: boolean;
+  isRunning: boolean;
+  createdDate: string;
+  events: ServerEvent[];
+  ipAddress: string; // Nueva propiedad para IP única
+}
+
 export interface SelectedServer {
   server: PredefinedServer;
   metrics: ServerMetrics;
   isActive: boolean;
   deploymentDate: string;
   events: ServerEvent[];
+  ipAddress?: string; // IP del servidor creado por el usuario
 }
 
 interface ServersState {
@@ -80,6 +97,7 @@ interface ServersState {
   predefinedServers: PredefinedServer[];
   userRequirements: UserServerRequirements | null;
   selectedServer: SelectedServer | null;
+  userCreatedServers: UserCreatedServer[];
   setUserRequirements: (requirements: UserServerRequirements) => void;
   getRecommendedServers: (
     selectedSpecs: string[],
@@ -87,14 +105,26 @@ interface ServersState {
   ) => PredefinedServer[];
   clearUserRequirements: () => void;
   selectServer: (server: PredefinedServer) => void;
+  selectUserCreatedServer: (serverId: string) => void;
+  createUserServer: (serverConfig: {
+    name: string;
+    description: string;
+    baseServer: PredefinedServer;
+    selectedSpecs: string[];
+    selectedSubSpecs: string[];
+    additionalNotes: string;
+  }) => void;
   updateServerMetrics: (metrics: Partial<ServerMetrics>) => void;
   updateServerMetricsSmooth: () => void;
+  updateUserServerStatus: (serverId: string, isRunning: boolean) => void;
   clearSelectedServer: () => void;
   generateMockMetrics: (serverId: string) => ServerMetrics;
   addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => void;
   getServerEvents: () => ServerEvent[];
   resetServerEvents: () => void;
   deleteServerEvent: (eventId: string) => void;
+  deleteUserCreatedServer: (serverId: string) => void;
+  restartUserServer: (serverId: string) => void;
 }
 
 export const useServersStore = create<ServersState>()(
@@ -580,6 +610,7 @@ export const useServersStore = create<ServersState>()(
 
       userRequirements: null,
       selectedServer: null,
+      userCreatedServers: [],
 
       setUserRequirements: (requirements: UserServerRequirements) => {
         set({ userRequirements: requirements });
@@ -611,6 +642,202 @@ export const useServersStore = create<ServersState>()(
 
       clearUserRequirements: () => {
         set({ userRequirements: null });
+      },
+
+      createUserServer: (serverConfig: {
+        name: string;
+        description: string;
+        baseServer: PredefinedServer;
+        selectedSpecs: string[];
+        selectedSubSpecs: string[];
+        additionalNotes: string;
+      }) => {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        const newServerId = `user-server-${timestamp}-${random}`;
+
+        // Generar IP única: 192.168.1.XXX (donde XXX son los últimos 3 números aleatorios)
+        const generateUniqueIP = () => {
+          const { userCreatedServers } = get();
+          let newIP: string;
+          let attempts = 0;
+
+          do {
+            const lastThreeNumbers = Math.floor(Math.random() * 254) + 1; // 1-254 para evitar .0 y .255
+            newIP = `192.168.1.${lastThreeNumbers}`;
+            attempts++;
+          } while (
+            userCreatedServers.some((server) => server.ipAddress === newIP) &&
+            attempts < 100
+          );
+
+          return newIP;
+        };
+
+        const serverIP = generateUniqueIP();
+
+        const initialEvents: ServerEvent[] = [
+          {
+            id: `event-${timestamp}-1`,
+            type: "start",
+            description: "Servidor creado y configurado correctamente",
+            timestamp: new Date().toISOString(),
+            status: "success",
+          },
+        ];
+
+        const newUserServer: UserCreatedServer = {
+          id: newServerId,
+          name: serverConfig.name,
+          description: serverConfig.description,
+          createdFromSpecs: serverConfig.selectedSpecs,
+          createdFromSubSpecs: serverConfig.selectedSubSpecs,
+          additionalNotes: serverConfig.additionalNotes,
+          baseServer: serverConfig.baseServer,
+          metrics: get().generateMockMetrics(serverConfig.baseServer.id),
+          isActive: true,
+          isRunning: false, // Por defecto los servidores inician apagados
+          createdDate: new Date().toISOString(),
+          events: initialEvents,
+          ipAddress: serverIP, // Asignar IP única
+        };
+
+        set((state) => ({
+          userCreatedServers: [...state.userCreatedServers, newUserServer],
+        }));
+
+        console.log(
+          `Servidor creado con ID único: ${newServerId} y IP: ${serverIP}`
+        );
+        return newServerId;
+      },
+
+      selectUserCreatedServer: (serverId: string) => {
+        const { userCreatedServers } = get();
+        const userServer = userCreatedServers.find((s) => s.id === serverId);
+
+        if (userServer) {
+          console.log(
+            `Servidor seleccionado: ${serverId} - ${userServer.name} - IP: ${userServer.ipAddress}`
+          );
+          set({
+            selectedServer: {
+              server: {
+                ...userServer.baseServer,
+                // Agregar el ID del servidor creado por el usuario para tracking
+                id: `${userServer.baseServer.id}-${serverId}`,
+              },
+              metrics: {
+                ...userServer.metrics,
+                // Actualizar estado basado en si está corriendo o no
+                status: userServer.isRunning
+                  ? userServer.metrics.status
+                  : "offline",
+              },
+              isActive: userServer.isActive,
+              deploymentDate: userServer.createdDate,
+              events: userServer.events,
+              ipAddress: userServer.ipAddress, // Incluir la IP del servidor
+            },
+          });
+        } else {
+          console.warn(`Servidor con ID ${serverId} no encontrado`);
+        }
+      },
+
+      updateUserServerStatus: (serverId: string, isRunning: boolean) => {
+        console.log(
+          `Actualizando estado del servidor ${serverId}: ${
+            isRunning ? "INICIANDO" : "DETENIENDO"
+          }`
+        );
+
+        set((state) => ({
+          userCreatedServers: state.userCreatedServers.map((server) =>
+            server.id === serverId
+              ? {
+                  ...server,
+                  isRunning,
+                  metrics: {
+                    ...server.metrics,
+                    status: isRunning ? "online" : "offline",
+                    lastUpdate: new Date().toISOString(),
+                  },
+                }
+              : server
+          ),
+        }));
+
+        // Si este servidor está actualmente seleccionado, actualizar también selectedServer
+        const { selectedServer, userCreatedServers } = get();
+        const updatedServer = userCreatedServers.find((s) => s.id === serverId);
+        if (
+          selectedServer &&
+          updatedServer &&
+          selectedServer.server.id.includes(serverId)
+        ) {
+          console.log(
+            `Actualizando servidor seleccionado en dashboard: ${serverId}`
+          );
+          set({
+            selectedServer: {
+              ...selectedServer,
+              metrics: {
+                ...selectedServer.metrics,
+                status: isRunning ? "online" : "offline",
+                lastUpdate: new Date().toISOString(),
+              },
+            },
+          });
+        }
+      },
+
+      restartUserServer: (serverId: string) => {
+        console.log(`Reiniciando servidor ${serverId}`);
+
+        // Primero detener el servidor
+        get().updateUserServerStatus(serverId, false);
+
+        // Después de 2.5 segundos, volver a iniciarlo (simulación de reinicio)
+        setTimeout(() => {
+          get().updateUserServerStatus(serverId, true);
+
+          // Agregar evento de reinicio
+          const timestamp = Date.now();
+          const restartEvent: ServerEvent = {
+            id: `event-${timestamp}-restart`,
+            type: "restart",
+            description: "Servidor reiniciado correctamente",
+            timestamp: new Date().toISOString(),
+            status: "success",
+          };
+
+          set((state) => ({
+            userCreatedServers: state.userCreatedServers.map((server) =>
+              server.id === serverId
+                ? {
+                    ...server,
+                    events: [...server.events, restartEvent],
+                  }
+                : server
+            ),
+          }));
+        }, 2500);
+      },
+
+      deleteUserCreatedServer: (serverId: string) => {
+        set((state) => ({
+          userCreatedServers: state.userCreatedServers.filter(
+            (server) => server.id !== serverId
+          ),
+        }));
+
+        // Si el servidor eliminado está seleccionado, limpiar selección
+        const { selectedServer, userCreatedServers } = get();
+        const deletedServer = userCreatedServers.find((s) => s.id === serverId);
+        if (selectedServer && deletedServer) {
+          set({ selectedServer: null });
+        }
       },
 
       selectServer: (server: PredefinedServer) => {

@@ -29,7 +29,7 @@ export default function ProtectedRoute({
   }
 
   if (adminOnly && !isAdmin) {
-    return <Navigate to={paths.user.landingPage} replace />;
+    return <Navigate to={paths.user.misServidores} replace />;
   }
 
   if (!user?.role) {
@@ -38,7 +38,7 @@ export default function ProtectedRoute({
 
 
   if (adminOnly && !isAdmin) {
-    return <Navigate to={paths.user.landingPage} replace />;
+    return <Navigate to={paths.user.misServidores} replace />;
   }
 
   if (userOnly && isAdmin) {
