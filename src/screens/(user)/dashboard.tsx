@@ -8,7 +8,16 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Server,
   Cpu,
@@ -24,6 +33,10 @@ import {
   PowerOff,
   RotateCcw,
   Trash2,
+  Shield,
+  Copy,
+  Plus,
+  Wifi,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useServersStore } from "@/store/serversStore";
@@ -31,17 +44,16 @@ import { paths } from "@/routes/paths";
 import { useNavigate } from "react-router-dom";
 import server1 from "@/assets/server-1024x506.jpg";
 
+interface FirewallRule {
+  id: string;
+  port: string;
+  origin: string;
+}
+
 export function UserDashboard() {
   const navigate = useNavigate();
-  const {
-    selectedServer,
-    updateServerMetrics,
-    addServerEvent,
-    deleteServerEvent,
-  } = useServersStore();
-  const [isServerRunning, setIsServerRunning] = useState(true);
-  const [isRestarting, setIsRestarting] = useState(false);
-  const [isOperationInProgress, setIsOperationInProgress] = useState(false);
+  const { selectedServer, updateServerMetricsSmooth, deleteServerEvent } =
+    useServersStore();
   const [confirmDelete, setConfirmDelete] = useState<{
     isOpen: boolean;
     eventId: string | null;
@@ -50,6 +62,32 @@ export function UserDashboard() {
     isOpen: false,
     eventId: null,
     eventDescription: "",
+  });
+
+  const [firewallRules, setFirewallRules] = useState<FirewallRule[]>([
+    { id: "1", port: "22", origin: "0.0.0.0/0" },
+    { id: "2", port: "80", origin: "0.0.0.0/0" },
+  ]);
+  const [newPort, setNewPort] = useState("");
+  // Get the IP from the selected server or use default
+  const serverIP = selectedServer?.ipAddress || "192.168.1.100";
+
+  // Debug log to check IP
+  console.log(
+    "Dashboard - selectedServer:",
+    selectedServer?.server?.name,
+    "IP:",
+    serverIP
+  );
+  const [copiedText, setCopiedText] = useState<string | null>(null);
+  const [confirmPortDelete, setConfirmPortDelete] = useState<{
+    isOpen: boolean;
+    portId: string | null;
+    portNumber: string;
+  }>({
+    isOpen: false,
+    portId: null,
+    portNumber: "",
   });
 
   const recentEvents = selectedServer
@@ -77,6 +115,93 @@ export function UserDashboard() {
       eventDescription: "",
     });
   };
+
+  // Firewall management functions
+  const addFirewallRule = () => {
+    if (
+      newPort.trim() &&
+      !firewallRules.some((rule) => rule.port === newPort.trim())
+    ) {
+      const newRule: FirewallRule = {
+        id: Date.now().toString(),
+        port: newPort.trim(),
+        origin: "0.0.0.0/0",
+      };
+      setFirewallRules([...firewallRules, newRule]);
+      setNewPort("");
+    }
+  };
+
+  const removeFirewallRule = (id: string) => {
+    setFirewallRules(firewallRules.filter((rule) => rule.id !== id));
+  };
+
+  const handleDeletePortRequest = (id: string, portNumber: string) => {
+    setConfirmPortDelete({
+      isOpen: true,
+      portId: id,
+      portNumber,
+    });
+  };
+
+  const closePortDeleteDialog = () => {
+    setConfirmPortDelete({
+      isOpen: false,
+      portId: null,
+      portNumber: "",
+    });
+  };
+
+  const confirmDeletePort = () => {
+    if (confirmPortDelete.portId) {
+      removeFirewallRule(confirmPortDelete.portId);
+    }
+    closePortDeleteDialog();
+  };
+
+  const copyToClipboard = async (text: string) => {
+    try {
+      // Método moderno para navegadores que soportan navigator.clipboard
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        setCopiedText(text);
+        console.log("Copied to clipboard:", text);
+        return;
+      }
+
+      // Fallback para navegadores más antiguos o contextos no seguros
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+
+      const successful = document.execCommand("copy");
+      document.body.removeChild(textArea);
+
+      if (successful) {
+        setCopiedText(text);
+        console.log("Copied to clipboard (fallback):", text);
+      }
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      // Mostrar un alert como último recurso
+      alert(`Copia este texto manualmente: ${text}`);
+    }
+  };
+
+  // Limpiar el estado de copiado después de 2 segundos
+  useEffect(() => {
+    if (copiedText) {
+      const timer = setTimeout(() => {
+        setCopiedText(null);
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [copiedText]);
 
   const getEventIcon = (type: string) => {
     switch (type) {
@@ -108,166 +233,16 @@ export function UserDashboard() {
     }
   };
 
-
   useEffect(() => {
-    if (!selectedServer || !isServerRunning) return;
+    if (!selectedServer) return;
 
     const interval = setInterval(() => {
-      updateServerMetrics({
-        cpu: {
-          current: Math.floor(Math.random() * 100),
-          average: Math.floor(Math.random() * 80),
-          critical: Math.floor(Math.random() * 10),
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        memory: {
-          current: Math.floor(Math.random() * 100),
-          average: Math.floor(Math.random() * 80),
-          total: selectedServer.metrics.memory.total,
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        network: {
-          current: Math.floor(Math.random() * 100),
-          total: selectedServer.metrics.network.total,
-          bandwidth: selectedServer.metrics.network.bandwidth,
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        storage: {
-          used: Math.floor(
-            Math.random() * selectedServer.metrics.storage.total
-          ),
-          total: selectedServer.metrics.storage.total,
-          available: Math.floor(
-            Math.random() * selectedServer.metrics.storage.total
-          ),
-          history: Array.from({ length: 10 }, () =>
-            Math.floor(Math.random() * 100)
-          ),
-        },
-        lastUpdate: new Date().toISOString(),
-      });
+      // Usar la nueva función suave que respeta las configuraciones de fluctuación
+      updateServerMetricsSmooth();
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [selectedServer, updateServerMetrics, isServerRunning]);
-
-  const handleStopServer = () => {
-    if (!selectedServer || isOperationInProgress) return;
-    setIsOperationInProgress(true);
-    setIsServerRunning(false);
-    updateServerMetrics({
-      status: "offline",
-      cpu: { current: 0, average: 0, critical: 0, history: [] },
-      memory: {
-        current: 0,
-        average: 0,
-        total: selectedServer.metrics.memory.total,
-        history: [],
-      },
-      network: {
-        current: 0,
-        total: selectedServer.metrics.network.total,
-        bandwidth: 0,
-        history: [],
-      },
-      storage: {
-        used: 0,
-        total: selectedServer.metrics.storage.total,
-        available: 0,
-        history: [],
-      },
-    });
-
-
-    try {
-      addServerEvent({
-        type: "stop",
-        description: "Servidor detenido manualmente",
-        status: "success",
-      });
-    } catch (error) {
-      console.error("Error al agregar evento:", error);
-    }
-
-
-    setTimeout(() => {
-      setIsOperationInProgress(false);
-    }, 1000);
-  };
-
-  const handleStartServer = () => {
-    if (!selectedServer || isOperationInProgress) return;
-    setIsOperationInProgress(true);
-    setIsServerRunning(true);
-    updateServerMetrics({
-      status: "online",
-    });
-
-
-    try {
-      addServerEvent({
-        type: "start",
-        description: "Servidor iniciado manualmente",
-        status: "success",
-      });
-    } catch (error) {
-      console.error("Error al agregar evento:", error);
-    }
-
-
-    setTimeout(() => {
-      setIsOperationInProgress(false);
-    }, 1000);
-  };
-
-  const handleRestartServer = async () => {
-    if (!selectedServer || isOperationInProgress) return;
-    setIsOperationInProgress(true);
-    setIsRestarting(true);
-    setIsServerRunning(false);
-
-
-    try {
-      addServerEvent({
-        type: "restart",
-        description: "Reinicio del servidor iniciado",
-        status: "success",
-      });
-    } catch (error) {
-      console.error("Error al agregar evento:", error);
-    }
-
-
-    setTimeout(() => {
-      setIsServerRunning(true);
-      setIsRestarting(false);
-      updateServerMetrics({
-        status: "online",
-      });
-
-
-      try {
-        addServerEvent({
-          type: "restart",
-          description: "Reinicio del servidor completado exitosamente",
-          status: "success",
-        });
-      } catch (error) {
-        console.error("Error al agregar evento:", error);
-      }
-
-
-      setTimeout(() => {
-        setIsOperationInProgress(false);
-      }, 500);
-    }, 3000); 
-  };
+  }, [selectedServer, updateServerMetricsSmooth]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -306,7 +281,6 @@ export function UserDashboard() {
     <div className="w-full max-w-7xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold">Panel de Monitoreo</h1>
 
-
       {selectedServer ? (
         <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
           <CardHeader>
@@ -332,60 +306,6 @@ export function UserDashboard() {
                 >
                   {getStatusText(selectedServer.metrics.status)}
                 </Badge>
-                {isOperationInProgress && (
-                  <Badge variant="secondary" className="text-xs">
-                    Operación en progreso...
-                  </Badge>
-                )}
-                <div className="flex gap-2">
-                  {isServerRunning ? (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleStopServer}
-                      disabled={isRestarting || isOperationInProgress}
-                      className="text-red-600 border-red-600 hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <PowerOff className="h-4 w-4 mr-1" />
-                      Detener
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleStartServer}
-                      disabled={isRestarting || isOperationInProgress}
-                      className="text-green-600 border-green-600 hover:bg-green-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <Power className="h-4 w-4 mr-1" />
-                      Iniciar
-                    </Button>
-                  )}
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleRestartServer}
-                    disabled={isRestarting || isOperationInProgress}
-                    className="text-orange-600 border-orange-600 hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <RotateCcw
-                      className={cn(
-                        "h-4 w-4 mr-1",
-                        isRestarting && "animate-spin"
-                      )}
-                    />
-                    {isRestarting ? "Reiniciando..." : "Reiniciar"}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => navigate(paths.user.servidores)}
-                    disabled={isRestarting || isOperationInProgress}
-                    className="disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Cambiar Servidor
-                  </Button>
-                </div>
               </div>
             </div>
           </CardHeader>
@@ -457,7 +377,7 @@ export function UserDashboard() {
                 <p className="text-2xl font-semibold text-emerald-500">
                   {selectedServer
                     ? `${selectedServer.metrics.cpu.average}%`
-                    : "32%"}
+                    : "--"}
                 </p>
               </div>
               <div>
@@ -465,7 +385,7 @@ export function UserDashboard() {
                 <p className="text-2xl font-semibold text-red-500">
                   {selectedServer
                     ? `${selectedServer.metrics.cpu.critical}%`
-                    : "89%"}
+                    : "--"}
                 </p>
               </div>
             </div>
@@ -476,7 +396,7 @@ export function UserDashboard() {
                   style={{
                     width: selectedServer
                       ? `${selectedServer.metrics.cpu.current}%`
-                      : "72%",
+                      : "0%",
                   }}
                 />
               </div>
@@ -485,7 +405,7 @@ export function UserDashboard() {
                 style={{
                   left: selectedServer
                     ? `${selectedServer.metrics.cpu.current}%`
-                    : "72%",
+                    : "0%",
                 }}
                 aria-hidden="true"
               >
@@ -494,7 +414,7 @@ export function UserDashboard() {
               <p className="text-center text-3xl font-bold mt-4">
                 {selectedServer
                   ? `${selectedServer.metrics.cpu.current}%`
-                  : "72%"}
+                  : "0%"}
               </p>
             </div>
           </CardContent>
@@ -511,12 +431,12 @@ export function UserDashboard() {
             <p className="text-sm text-gray-500 mb-2">
               {selectedServer
                 ? `${selectedServer.metrics.memory.current}%`
-                : "Relación promedio"}
+                : "Sin datos"}
             </p>
             <div className="flex items-end h-32 gap-2">
               {(selectedServer
                 ? selectedServer.metrics.memory.history
-                : [40, 80, 60, 35, 45]
+                : [0, 0, 0, 0, 0]
               ).map((value, i) => {
                 const days = ["Lun", "Mar", "Mié", "Jue", "Vie"];
                 return (
@@ -565,14 +485,14 @@ export function UserDashboard() {
                 <span className="font-medium">
                   {selectedServer
                     ? selectedServer.metrics.network.total.toLocaleString()
-                    : "229,293"}
+                    : "--"}
                 </span>
               </p>
             </div>
             <p className="text-sm text-gray-500 mb-2">
               {selectedServer
                 ? `${selectedServer.metrics.network.current}%`
-                : "Uso de servidores más populares"}
+                : "Sin datos"}
             </p>
             <div className="relative h-40 flex justify-center">
               <div className="w-40 h-40 rounded-full border-8 border-blue-600 relative">
@@ -583,25 +503,25 @@ export function UserDashboard() {
                       transform: `rotate(${
                         selectedServer
                           ? selectedServer.metrics.network.current * 3.6
-                          : 45
+                          : 0
                       }deg) skew(9deg, 9deg)`,
                       clipPath: "polygon(50% 50%, 100% 0, 100% 100%)",
                     }}
                   />
                 </div>
                 <div className="absolute -left-3 top-1/2 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-full">
-                  {selectedServer ? "Actual" : "Servidor 1"}
+                  {selectedServer ? "Actual" : "Sin datos"}
                   <br />
                   {selectedServer
                     ? selectedServer.metrics.network.current
-                    : "2,811"}
+                    : "--"}
                 </div>
                 <div className="absolute -right-3 top-1/3 -translate-y-1/2 bg-gray-800 text-white text-xs px-2 py-1 rounded-full">
-                  {selectedServer ? "Ancho" : "Servidor 2"}
+                  {selectedServer ? "Ancho" : "Sin datos"}
                   <br />
                   {selectedServer
                     ? `${selectedServer.metrics.network.bandwidth} Mbps`
-                    : "12,799"}
+                    : "--"}
                 </div>
               </div>
             </div>
@@ -630,17 +550,19 @@ export function UserDashboard() {
                   %
                 </p>
                 <p className="text-sm text-gray-600">Usado</p>
+                <p className="text-xs text-gray-500">
+                  {Math.round(selectedServer.metrics.storage.used)} GB
+                </p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-green-600">
-                  {Math.round(selectedServer.metrics.storage.available / 1024)}{" "}
-                  GB
+                  {Math.round(selectedServer.metrics.storage.available)} GB
                 </p>
                 <p className="text-sm text-gray-600">Disponible</p>
               </div>
               <div className="text-center">
                 <p className="text-2xl font-bold text-purple-600">
-                  {Math.round(selectedServer.metrics.storage.total / 1024)} GB
+                  {Math.round(selectedServer.metrics.storage.total)} GB
                 </p>
                 <p className="text-sm text-gray-600">Total</p>
               </div>
@@ -674,12 +596,12 @@ export function UserDashboard() {
             <h3 className="font-medium mb-2">
               {selectedServer
                 ? `Costo del servidor: $${selectedServer.server.price}/mes`
-                : "Título"}
+                : "Servidor"}
             </h3>
             <p className="text-sm text-gray-600">
               {selectedServer
-                ? `Servidor ${selectedServer.server.name} con ${selectedServer.server.features.length} características incluidas.`
-                : "Lorem ipsum dolor sit amet consectetur. Gravida commodo cras enim iaculis suscipit convallis augue eget dictumst. Integer nulla sem massa sed eleifend ultricies vitae at. Pulvinar duis malesuada commodo condimentum felis. Morbi hendrerit sodales aliquam a diam viverra nunc."}
+                ? `${selectedServer.server.name} con ${selectedServer.server.features.length} características incluidas.`
+                : "Crear un servidor conlleva una serie de gastos que es importante tener en cuenta desde el principio. En primer lugar, está el costo del hardware, que dependerá del tipo de servidor que se quiera montar. Una máquina básica puede incluir un procesador decente, al menos 16GB de RAM y un disco SSD, pero si se busca mayor rendimiento o tolerancia a fallos, será necesario invertir en componentes más robustos, como fuentes redundantes, almacenamiento RAID, o procesadores con múltiples núcleos."}
             </p>
           </CardContent>
         </Card>
@@ -695,14 +617,14 @@ export function UserDashboard() {
                 ? `Compatibilidad: ${Math.round(
                     selectedServer.server.matchPercentage || 0
                   )}%`
-                : "Título"}
+                : "Máquina genérica"}
             </h3>
             <p className="text-sm text-gray-600">
               {selectedServer
                 ? `Optimizado para: ${selectedServer.server.recommendedFor.join(
                     ", "
                   )}`
-                : "Lorem ipsum dolor sit amet consectetur. Gravida commodo cras enim iaculis suscipit convallis augue eget dictumst. Integer nulla sem massa sed eleifend ultricies vitae at. Pulvinar duis malesuada commodo condimentum felis. Morbi hendrerit sodales aliquam a diam viverra nunc."}
+                : "Se puede decir que un servidor con características promedio —por ejemplo, un procesador de 4 núcleos, 16 a 32GB de RAM y disco SSD— puede soportar sin problemas aplicaciones web medianas, sitios con tráfico moderado, pequeños sistemas de gestión o entornos de desarrollo. Su rendimiento dependerá del tipo de tareas que se le asignen: servidores de archivos, servidores web, bases de datos o contenedores tienen demandas distintas. A mayor cantidad de procesos simultáneos o usuarios conectados, mayor será la necesidad de CPU y memoria."}
             </p>
           </CardContent>
         </Card>
@@ -824,6 +746,137 @@ export function UserDashboard() {
         </div>
       )}
 
+      {/* Configuración de Firewall */}
+      {selectedServer && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Configuración de Firewall
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex gap-2">
+                <Input
+                  placeholder="Puerto (ej: 443, 8080)"
+                  value={newPort}
+                  onChange={(e) => setNewPort(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && addFirewallRule()}
+                  className="flex-1"
+                />
+                <Button onClick={addFirewallRule} disabled={!newPort.trim()}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Puerto
+                </Button>
+              </div>
+
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Intervalo de Puertos</TableHead>
+                    <TableHead>Origen</TableHead>
+                    <TableHead className="w-20">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {firewallRules.map((rule) => (
+                    <TableRow key={rule.id}>
+                      <TableCell className="font-medium">{rule.port}</TableCell>
+                      <TableCell>{rule.origin}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() =>
+                            handleDeletePortRequest(rule.id, rule.port)
+                          }
+                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Información de Conexión */}
+      {selectedServer && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Wifi className="h-5 w-5" />
+              Información de Conexión
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-gray-600">Usuario</div>
+                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <code className="text-sm font-mono">ubuntu</code>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-gray-600">
+                  IP del Servidor
+                </div>
+                <div className="flex items-center gap-2 p-3 bg-gray-50 rounded-lg">
+                  <code className="text-sm font-mono">{serverIP}</code>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => copyToClipboard(serverIP)}
+                    className="ml-auto"
+                  >
+                    {copiedText === serverIP ? (
+                      <>
+                        <span className="text-xs text-green-600 mr-1">✓</span>
+                        <Copy className="h-4 w-4 text-green-600" />
+                      </>
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="h-4 w-4 text-blue-600" />
+                <span className="font-medium text-blue-800">Conexión SSH</span>
+              </div>
+              <div className="flex items-center gap-2 p-2 bg-white rounded border">
+                <code className="text-sm font-mono flex-1">
+                  ssh ubuntu@{serverIP}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => copyToClipboard(`ssh ubuntu@${serverIP}`)}
+                >
+                  {copiedText === `ssh ubuntu@${serverIP}` ? (
+                    <>
+                      <span className="text-xs text-green-600 mr-1">✓</span>
+                      <Copy className="h-4 w-4 text-green-600" />
+                    </>
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Eventos Recientes */}
       {selectedServer && recentEvents.length > 0 && (
         <Card>
@@ -890,6 +943,14 @@ export function UserDashboard() {
         onConfirm={confirmDeleteEvent}
         title="Confirmar eliminación"
         description={`¿Estás seguro de que quieres eliminar el evento "${confirmDelete.eventDescription}"? Esta acción no se puede deshacer.`}
+      />
+
+      <ConfirmDialog
+        isOpen={confirmPortDelete.isOpen}
+        onClose={closePortDeleteDialog}
+        onConfirm={confirmDeletePort}
+        title="🔒 Eliminar Puerto del Firewall"
+        description={`¿Estás seguro de que deseas eliminar el puerto ${confirmPortDelete.portNumber}? Esta acción cerrará el acceso a este puerto y puede afectar servicios que dependan de él. Esta acción no se puede deshacer.`}
       />
     </div>
   );

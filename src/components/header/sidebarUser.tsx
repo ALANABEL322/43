@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Home,
-  Users,
   Server,
   AlertTriangle,
   LogOut,
@@ -30,7 +29,25 @@ export default function SidebarUser() {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Limpiar localStorage
+    localStorage.clear();
+
+    // Limpiar sessionStorage
+    sessionStorage.clear();
+
+    // Limpiar cache del navegador (si es posible)
+    if ("caches" in window) {
+      caches.keys().then((names) => {
+        names.forEach((name) => {
+          caches.delete(name);
+        });
+      });
+    }
+
+    // Ejecutar logout del store
     logout();
+
+    // Navegar al login
     navigate(paths.auth.login);
   };
 
@@ -55,11 +72,11 @@ export default function SidebarUser() {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
-                    onClick={() => navigate(paths.user.landingPage)}
+                    onClick={() => navigate(paths.user.misServidores)}
                     className="w-full"
                   >
                     <LayoutDashboard className="h-4 w-4 text-white" />
-                    <span className="text-white">Inicio</span>
+                    <span className="text-white">Mis Servidores</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
 

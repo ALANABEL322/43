@@ -67,12 +67,29 @@ export interface ServerMetrics {
   lastUpdate: string;
 }
 
+export interface UserCreatedServer {
+  id: string;
+  name: string;
+  description: string;
+  createdFromSpecs: string[];
+  createdFromSubSpecs: string[];
+  additionalNotes: string;
+  baseServer: PredefinedServer;
+  metrics: ServerMetrics;
+  isActive: boolean;
+  isRunning: boolean;
+  createdDate: string;
+  events: ServerEvent[];
+  ipAddress: string; // Nueva propiedad para IP única
+}
+
 export interface SelectedServer {
   server: PredefinedServer;
   metrics: ServerMetrics;
   isActive: boolean;
   deploymentDate: string;
   events: ServerEvent[];
+  ipAddress?: string; // IP del servidor creado por el usuario
 }
 
 interface ServersState {
@@ -80,6 +97,7 @@ interface ServersState {
   predefinedServers: PredefinedServer[];
   userRequirements: UserServerRequirements | null;
   selectedServer: SelectedServer | null;
+  userCreatedServers: UserCreatedServer[];
   setUserRequirements: (requirements: UserServerRequirements) => void;
   getRecommendedServers: (
     selectedSpecs: string[],
@@ -87,13 +105,33 @@ interface ServersState {
   ) => PredefinedServer[];
   clearUserRequirements: () => void;
   selectServer: (server: PredefinedServer) => void;
+  selectUserCreatedServer: (serverId: string) => void;
+  createUserServer: (serverConfig: {
+    name: string;
+    description: string;
+    baseServer: PredefinedServer;
+    selectedSpecs: string[];
+    selectedSubSpecs: string[];
+    additionalNotes: string;
+  }) => void;
   updateServerMetrics: (metrics: Partial<ServerMetrics>) => void;
+  updateServerMetricsSmooth: () => void;
+  updateUserServerStatus: (serverId: string, isRunning: boolean) => void;
   clearSelectedServer: () => void;
   generateMockMetrics: (serverId: string) => ServerMetrics;
   addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => void;
   getServerEvents: () => ServerEvent[];
   resetServerEvents: () => void;
   deleteServerEvent: (eventId: string) => void;
+  deleteUserCreatedServer: (serverId: string) => void;
+  restartUserServer: (serverId: string) => void;
+  createServerFromGrid: (gridServer: {
+    instance: string;
+    vcpu: string;
+    ram: string;
+    storage: string;
+    payPerUse: string;
+  }) => string;
 }
 
 export const useServersStore = create<ServersState>()(
@@ -579,6 +617,7 @@ export const useServersStore = create<ServersState>()(
 
       userRequirements: null,
       selectedServer: null,
+      userCreatedServers: [],
 
       setUserRequirements: (requirements: UserServerRequirements) => {
         set({ userRequirements: requirements });
@@ -610,6 +649,202 @@ export const useServersStore = create<ServersState>()(
 
       clearUserRequirements: () => {
         set({ userRequirements: null });
+      },
+
+      createUserServer: (serverConfig: {
+        name: string;
+        description: string;
+        baseServer: PredefinedServer;
+        selectedSpecs: string[];
+        selectedSubSpecs: string[];
+        additionalNotes: string;
+      }) => {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        const newServerId = `user-server-${timestamp}-${random}`;
+
+        // Generar IP única: 192.168.1.XXX (donde XXX son los últimos 3 números aleatorios)
+        const generateUniqueIP = () => {
+          const { userCreatedServers } = get();
+          let newIP: string;
+          let attempts = 0;
+
+          do {
+            const lastThreeNumbers = Math.floor(Math.random() * 254) + 1; // 1-254 para evitar .0 y .255
+            newIP = `192.168.1.${lastThreeNumbers}`;
+            attempts++;
+          } while (
+            userCreatedServers.some((server) => server.ipAddress === newIP) &&
+            attempts < 100
+          );
+
+          return newIP;
+        };
+
+        const serverIP = generateUniqueIP();
+
+        const initialEvents: ServerEvent[] = [
+          {
+            id: `event-${timestamp}-1`,
+            type: "start",
+            description: "Servidor creado y configurado correctamente",
+            timestamp: new Date().toISOString(),
+            status: "success",
+          },
+        ];
+
+        const newUserServer: UserCreatedServer = {
+          id: newServerId,
+          name: serverConfig.name,
+          description: serverConfig.description,
+          createdFromSpecs: serverConfig.selectedSpecs,
+          createdFromSubSpecs: serverConfig.selectedSubSpecs,
+          additionalNotes: serverConfig.additionalNotes,
+          baseServer: serverConfig.baseServer,
+          metrics: get().generateMockMetrics(serverConfig.baseServer.id),
+          isActive: true,
+          isRunning: false, // Por defecto los servidores inician apagados
+          createdDate: new Date().toISOString(),
+          events: initialEvents,
+          ipAddress: serverIP, // Asignar IP única
+        };
+
+        set((state) => ({
+          userCreatedServers: [...state.userCreatedServers, newUserServer],
+        }));
+
+        console.log(
+          `Servidor creado con ID único: ${newServerId} y IP: ${serverIP}`
+        );
+        return newServerId;
+      },
+
+      selectUserCreatedServer: (serverId: string) => {
+        const { userCreatedServers } = get();
+        const userServer = userCreatedServers.find((s) => s.id === serverId);
+
+        if (userServer) {
+          console.log(
+            `Servidor seleccionado: ${serverId} - ${userServer.name} - IP: ${userServer.ipAddress}`
+          );
+          set({
+            selectedServer: {
+              server: {
+                ...userServer.baseServer,
+                // Agregar el ID del servidor creado por el usuario para tracking
+                id: `${userServer.baseServer.id}-${serverId}`,
+              },
+              metrics: {
+                ...userServer.metrics,
+                // Actualizar estado basado en si está corriendo o no
+                status: userServer.isRunning
+                  ? userServer.metrics.status
+                  : "offline",
+              },
+              isActive: userServer.isActive,
+              deploymentDate: userServer.createdDate,
+              events: userServer.events,
+              ipAddress: userServer.ipAddress, // Incluir la IP del servidor
+            },
+          });
+        } else {
+          console.warn(`Servidor con ID ${serverId} no encontrado`);
+        }
+      },
+
+      updateUserServerStatus: (serverId: string, isRunning: boolean) => {
+        console.log(
+          `Actualizando estado del servidor ${serverId}: ${
+            isRunning ? "INICIANDO" : "DETENIENDO"
+          }`
+        );
+
+        set((state) => ({
+          userCreatedServers: state.userCreatedServers.map((server) =>
+            server.id === serverId
+              ? {
+                  ...server,
+                  isRunning,
+                  metrics: {
+                    ...server.metrics,
+                    status: isRunning ? "online" : "offline",
+                    lastUpdate: new Date().toISOString(),
+                  },
+                }
+              : server
+          ),
+        }));
+
+        // Si este servidor está actualmente seleccionado, actualizar también selectedServer
+        const { selectedServer, userCreatedServers } = get();
+        const updatedServer = userCreatedServers.find((s) => s.id === serverId);
+        if (
+          selectedServer &&
+          updatedServer &&
+          selectedServer.server.id.includes(serverId)
+        ) {
+          console.log(
+            `Actualizando servidor seleccionado en dashboard: ${serverId}`
+          );
+          set({
+            selectedServer: {
+              ...selectedServer,
+              metrics: {
+                ...selectedServer.metrics,
+                status: isRunning ? "online" : "offline",
+                lastUpdate: new Date().toISOString(),
+              },
+            },
+          });
+        }
+      },
+
+      restartUserServer: (serverId: string) => {
+        console.log(`Reiniciando servidor ${serverId}`);
+
+        // Primero detener el servidor
+        get().updateUserServerStatus(serverId, false);
+
+        // Después de 2.5 segundos, volver a iniciarlo (simulación de reinicio)
+        setTimeout(() => {
+          get().updateUserServerStatus(serverId, true);
+
+          // Agregar evento de reinicio
+          const timestamp = Date.now();
+          const restartEvent: ServerEvent = {
+            id: `event-${timestamp}-restart`,
+            type: "restart",
+            description: "Servidor reiniciado correctamente",
+            timestamp: new Date().toISOString(),
+            status: "success",
+          };
+
+          set((state) => ({
+            userCreatedServers: state.userCreatedServers.map((server) =>
+              server.id === serverId
+                ? {
+                    ...server,
+                    events: [...server.events, restartEvent],
+                  }
+                : server
+            ),
+          }));
+        }, 2500);
+      },
+
+      deleteUserCreatedServer: (serverId: string) => {
+        set((state) => ({
+          userCreatedServers: state.userCreatedServers.filter(
+            (server) => server.id !== serverId
+          ),
+        }));
+
+        // Si el servidor eliminado está seleccionado, limpiar selección
+        const { selectedServer, userCreatedServers } = get();
+        const deletedServer = userCreatedServers.find((s) => s.id === serverId);
+        if (selectedServer && deletedServer) {
+          set({ selectedServer: null });
+        }
       },
 
       selectServer: (server: PredefinedServer) => {
@@ -727,52 +962,205 @@ export const useServersStore = create<ServersState>()(
             networkBase = { current: 55, total: 700, bandwidth: 200 };
         }
 
+        // INTERCAMBIO: Lo que era storage usage % ahora es memory current %
+        // Lo que era memory current % ahora es storage usage %
+        const storageUsagePercent = Math.floor(
+          (storageBase.used / storageBase.total) * 100
+        );
+
         const mockMetrics: ServerMetrics = {
           cpu: {
-            current: cpuBase.current + Math.floor(Math.random() * 20) - 10,
+            // CPU con fluctuación mínima (±2 en lugar de ±10)
+            current: Math.max(
+              0,
+              Math.min(100, cpuBase.current + Math.floor(Math.random() * 4) - 2)
+            ),
             average: cpuBase.average,
             critical: cpuBase.critical,
-            history: Array.from(
-              { length: 10 },
-              () => cpuBase.average + Math.floor(Math.random() * 30) - 15
+            history: Array.from({ length: 10 }, () =>
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  cpuBase.average + Math.floor(Math.random() * 6) - 3
+                )
+              )
             ),
           },
           memory: {
-            current: memoryBase.current + Math.floor(Math.random() * 20) - 10,
-            average: memoryBase.average,
+            // Memory sin fluctuación - usa el % de storage como valor fijo
+            current: storageUsagePercent,
+            average: storageUsagePercent,
             total: memoryBase.total,
-            history: Array.from(
-              { length: 10 },
-              () => memoryBase.average + Math.floor(Math.random() * 30) - 15
-            ),
+            history: Array.from({ length: 10 }, () => storageUsagePercent),
           },
           network: {
-            current: networkBase.current + Math.floor(Math.random() * 20) - 10,
+            current: Math.max(
+              0,
+              Math.min(
+                100,
+                networkBase.current + Math.floor(Math.random() * 20) - 10
+              )
+            ),
             total: networkBase.total,
             bandwidth: networkBase.bandwidth,
-            history: Array.from(
-              { length: 10 },
-              () => networkBase.current + Math.floor(Math.random() * 30) - 15
+            history: Array.from({ length: 10 }, () =>
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  networkBase.current + Math.floor(Math.random() * 30) - 15
+                )
+              )
             ),
           },
           storage: {
-            used: storageBase.used + Math.floor(Math.random() * 50) - 25,
+            // Storage ahora usa el % de memory como base
+            used: Math.floor((memoryBase.current / 100) * storageBase.total),
             total: storageBase.total,
             available:
-              storageBase.available + Math.floor(Math.random() * 50) - 25,
-            history: Array.from(
-              { length: 10 },
-              () =>
-                Math.floor((storageBase.used / storageBase.total) * 100) +
-                Math.floor(Math.random() * 20) -
-                10
-            ),
+              storageBase.total -
+              Math.floor((memoryBase.current / 100) * storageBase.total),
+            history: Array.from({ length: 10 }, () => memoryBase.current),
           },
           status: "online",
           uptime: Math.floor(Math.random() * 10000) + 5000,
           lastUpdate: new Date().toISOString(),
         };
         return mockMetrics;
+      },
+
+      // Nueva función para actualización suave de métricas
+      updateServerMetricsSmooth: () => {
+        const currentState = get();
+        if (!currentState.selectedServer) return;
+
+        const currentMetrics = currentState.selectedServer.metrics;
+        const serverId = currentState.selectedServer.server.id;
+
+        // Generar nuevos valores base según el servidor
+        let cpuBase, memoryBase, storageBase, networkBase;
+
+        switch (serverId) {
+          case "basic-web":
+            cpuBase = { current: 45, average: 35, critical: 5 };
+            memoryBase = { current: 60, average: 50, total: 8 };
+            storageBase = { used: 50, total: 100, available: 50 };
+            networkBase = { current: 40, total: 500, bandwidth: 100 };
+            break;
+          case "business-server":
+            cpuBase = { current: 65, average: 55, critical: 8 };
+            memoryBase = { current: 75, average: 65, total: 16 };
+            storageBase = { used: 300, total: 500, available: 200 };
+            networkBase = { current: 60, total: 800, bandwidth: 250 };
+            break;
+          case "enterprise-server":
+            cpuBase = { current: 80, average: 70, critical: 12 };
+            memoryBase = { current: 85, average: 75, total: 32 };
+            storageBase = { used: 800, total: 1000, available: 200 };
+            networkBase = { current: 75, total: 1200, bandwidth: 500 };
+            break;
+          case "database-server":
+            cpuBase = { current: 70, average: 60, critical: 10 };
+            memoryBase = { current: 90, average: 80, total: 32 };
+            storageBase = { used: 600, total: 1000, available: 400 };
+            networkBase = { current: 55, total: 900, bandwidth: 300 };
+            break;
+          case "storage-server":
+            cpuBase = { current: 30, average: 25, critical: 3 };
+            memoryBase = { current: 40, average: 35, total: 16 };
+            storageBase = { used: 1500, total: 2000, available: 500 };
+            networkBase = { current: 45, total: 600, bandwidth: 150 };
+            break;
+          case "development-server":
+            cpuBase = { current: 55, average: 45, critical: 6 };
+            memoryBase = { current: 70, average: 60, total: 8 };
+            storageBase = { used: 80, total: 100, available: 20 };
+            networkBase = { current: 50, total: 400, bandwidth: 100 };
+            break;
+          default:
+            cpuBase = { current: 50, average: 40, critical: 7 };
+            memoryBase = { current: 65, average: 55, total: 16 };
+            storageBase = { used: 400, total: 500, available: 100 };
+            networkBase = { current: 55, total: 700, bandwidth: 200 };
+        }
+
+        // Intercambio: storage % se convierte en memory, memory % se convierte en storage
+        const storageUsagePercent = Math.floor(
+          (storageBase.used / storageBase.total) * 100
+        );
+
+        const updatedMetrics: Partial<ServerMetrics> = {
+          cpu: {
+            // CPU con fluctuación mínima (±2)
+            current: Math.max(
+              0,
+              Math.min(100, cpuBase.current + Math.floor(Math.random() * 4) - 2)
+            ),
+            average: cpuBase.average,
+            critical: cpuBase.critical,
+            history: [
+              ...currentMetrics.cpu.history.slice(1),
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  cpuBase.current + Math.floor(Math.random() * 4) - 2
+                )
+              ),
+            ],
+          },
+          memory: {
+            // Memory sin fluctuación - valor fijo basado en storage %
+            current: storageUsagePercent,
+            average: storageUsagePercent,
+            total: currentMetrics.memory.total,
+            history: [
+              ...currentMetrics.memory.history.slice(1),
+              storageUsagePercent,
+            ],
+          },
+          network: {
+            current: Math.max(
+              0,
+              Math.min(
+                100,
+                networkBase.current + Math.floor(Math.random() * 20) - 10
+              )
+            ),
+            total: currentMetrics.network.total,
+            bandwidth: currentMetrics.network.bandwidth,
+            history: [
+              ...currentMetrics.network.history.slice(1),
+              Math.max(
+                0,
+                Math.min(
+                  100,
+                  networkBase.current + Math.floor(Math.random() * 20) - 10
+                )
+              ),
+            ],
+          },
+          storage: {
+            // Storage usa memory % como base
+            used: Math.floor(
+              (memoryBase.current / 100) * currentMetrics.storage.total
+            ),
+            total: currentMetrics.storage.total,
+            available:
+              currentMetrics.storage.total -
+              Math.floor(
+                (memoryBase.current / 100) * currentMetrics.storage.total
+              ),
+            history: [
+              ...currentMetrics.storage.history.slice(1),
+              memoryBase.current,
+            ],
+          },
+          lastUpdate: new Date().toISOString(),
+        };
+
+        get().updateServerMetrics(updatedMetrics);
       },
       addServerEvent: (event: Omit<ServerEvent, "id" | "timestamp">) => {
         const currentState = get();
@@ -833,6 +1221,183 @@ export const useServersStore = create<ServersState>()(
             },
           });
         }
+      },
+
+      createServerFromGrid: (gridServer: {
+        instance: string;
+        vcpu: string;
+        ram: string;
+        storage: string;
+        payPerUse: string;
+      }) => {
+        const timestamp = Date.now();
+        const random = Math.random().toString(36).substr(2, 9);
+        const newServerId = `grid-server-${timestamp}-${random}`;
+
+        // Generar IP única
+        const generateUniqueIP = () => {
+          const { userCreatedServers } = get();
+          let newIP: string;
+          let attempts = 0;
+
+          do {
+            const lastThreeNumbers = Math.floor(Math.random() * 254) + 1;
+            newIP = `192.168.1.${lastThreeNumbers}`;
+            attempts++;
+          } while (
+            userCreatedServers.some((server) => server.ipAddress === newIP) &&
+            attempts < 100
+          );
+
+          return newIP;
+        };
+
+        const serverIP = generateUniqueIP();
+
+        // Crear servidor base mockado basado en las especificaciones de la grilla
+        const baseServer: PredefinedServer = {
+          id: `grid-${gridServer.instance.toLowerCase().replace(/\s+/g, "-")}`,
+          name: `Servidor ${gridServer.instance}`,
+          description: `Servidor de alta performance con ${gridServer.vcpu} vCPUs, ${gridServer.ram} de RAM y ${gridServer.storage} de almacenamiento`,
+          specifications: [
+            `${gridServer.vcpu} vCPUs`,
+            `${gridServer.ram} RAM`,
+            `${gridServer.storage} Almacenamiento`,
+            "Red de alta velocidad",
+            "Monitoreo 24/7",
+          ],
+          price: parseFloat(
+            gridServer.payPerUse.replace(/[$,]/g, "").split("/")[0]
+          ),
+          features: [
+            `${gridServer.vcpu} núcleos de CPU de alto rendimiento`,
+            `${gridServer.ram} de memoria RAM DDR4`,
+            `${gridServer.storage} de almacenamiento SSD NVMe`,
+            "Ancho de banda ilimitado",
+            "Panel de control avanzado",
+            "Backup automático diario",
+            "Soporte técnico 24/7",
+            "Certificaciones de seguridad",
+          ],
+          recommendedFor: [
+            "Aplicaciones empresariales",
+            "Bases de datos",
+            "Desarrollo y testing",
+            "Hosting web",
+            "Análisis de datos",
+          ],
+        };
+
+        // Generar métricas coherentes basadas en las especificaciones
+        const generateGridMetrics = (): ServerMetrics => {
+          const cpuCores = parseInt(gridServer.vcpu);
+          const ramGB = parseInt(gridServer.ram.replace(/[^\d]/g, ""));
+          const storageGB = parseInt(gridServer.storage.replace(/[^\d]/g, ""));
+
+          // Métricas base más realistas según las especificaciones
+          const baseCpuUsage = Math.max(5, Math.min(25, cpuCores * 2)); // Uso base proporcional
+          const baseMemoryUsage = Math.max(10, Math.min(40, ramGB * 0.3)); // 30% base aprox
+          const baseStorageUsed = storageGB * 0.05; // Exactamente 5% del almacenamiento total
+
+          return {
+            cpu: {
+              current: baseCpuUsage + Math.random() * 10,
+              average: baseCpuUsage,
+              critical: 85,
+              history: Array.from({ length: 24 }, () =>
+                Math.max(0, baseCpuUsage + (Math.random() - 0.5) * 20)
+              ),
+            },
+            memory: {
+              current: baseMemoryUsage + Math.random() * 15,
+              average: baseMemoryUsage,
+              total: ramGB * 1024, // En MB
+              history: Array.from({ length: 24 }, () =>
+                Math.max(0, baseMemoryUsage + (Math.random() - 0.5) * 25)
+              ),
+            },
+            network: {
+              current: Math.random() * 100 + 50,
+              total: 1000, // 1Gbps
+              bandwidth: 1000,
+              history: Array.from(
+                { length: 24 },
+                () => Math.random() * 150 + 25
+              ),
+            },
+            storage: {
+              used: baseStorageUsed, // 5% del almacenamiento total
+              total: storageGB, // Almacenamiento total del servidor
+              available: storageGB - baseStorageUsed, // 95% disponible
+              history: Array.from({ length: 24 }, () =>
+                // Mantener el historial cerca del 5% con pequeñas variaciones
+                Math.max(
+                  storageGB * 0.03,
+                  Math.min(
+                    storageGB * 0.08,
+                    baseStorageUsed + (Math.random() - 0.5) * 2
+                  )
+                )
+              ),
+            },
+            status: "online" as const,
+            uptime: Math.floor(Math.random() * 30 + 1), // 1-30 días
+            lastUpdate: new Date().toISOString(),
+          };
+        };
+
+        const initialEvents: ServerEvent[] = [
+          {
+            id: `event-${timestamp}-1`,
+            type: "start",
+            description: `Servidor ${gridServer.instance} creado y configurado correctamente`,
+            timestamp: new Date().toISOString(),
+            status: "success",
+          },
+          {
+            id: `event-${timestamp}-2`,
+            type: "update",
+            description: `Configuración inicial: ${gridServer.vcpu} vCPUs, ${gridServer.ram} RAM, ${gridServer.storage} almacenamiento`,
+            timestamp: new Date(Date.now() - 1000).toISOString(),
+            status: "success",
+          },
+          {
+            id: `event-${timestamp}-3`,
+            type: "start",
+            description: "Sistema operativo instalado y optimizado",
+            timestamp: new Date(Date.now() - 2000).toISOString(),
+            status: "success",
+          },
+        ];
+
+        const newUserServer: UserCreatedServer = {
+          id: newServerId,
+          name: `Servidor ${gridServer.instance}`,
+          description: `${gridServer.instance}`,
+          createdFromSpecs: [
+            `${gridServer.vcpu}-vcpus`,
+            `${gridServer.ram}-ram`,
+            `${gridServer.storage}-storage`,
+          ],
+          createdFromSubSpecs: [],
+          additionalNotes: `Creado desde grilla de catálogo. Precio: ${gridServer.payPerUse}`,
+          baseServer: baseServer,
+          metrics: generateGridMetrics(),
+          isActive: true,
+          isRunning: true, // Los servidores de la grilla inician activos
+          createdDate: new Date().toISOString(),
+          events: initialEvents,
+          ipAddress: serverIP,
+        };
+
+        set((state) => ({
+          userCreatedServers: [...state.userCreatedServers, newUserServer],
+        }));
+
+        console.log(
+          `Servidor de grilla creado: ${newServerId} (${gridServer.instance}) con IP: ${serverIP}`
+        );
+        return newServerId;
       },
     }),
     {
